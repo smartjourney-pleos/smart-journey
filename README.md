@@ -85,17 +85,18 @@ flowchart LR
 
 ## 브랜치와 기여 규칙
 
-팀원 간 충돌을 방지하고 프론트엔드와 백엔드가 독립적으로 개발할 수 있도록 브랜치를 분리하여 운영합니다.
+플레오스 차량 앱, 매장 웹 POS, 중계 서버 개발이 독립적으로 진행될 수 있도록 역할별 브랜치로 분리하여 운영합니다.
 
-| 브랜치 | 용도 | 병합 규칙 |
-| --- | --- | --- |
-| `main` | 제출·심사용 최종 릴리스 안정 버전 | 🔒 보호 브랜치 (`test`에서 검증 후 PR 병합) |
-| `test` | 통합 테스트 및 시연 E2E 검증 | 🔒 보호 브랜치 (`frontend-dev`, `backend-dev` 머지 후 테스트) |
-| `frontend-dev` | 프론트엔드(`pos-web`) 작업 통합 | 🛠️ 프론트엔드 기능 개발 후 PR 또는 병합 |
-| `backend-dev` | 백엔드(`server`) 작업 통합 | 🛠️ 백엔드 기능 개발 후 PR 또는 병합 |
-| `feature/기능명` | 개별 세부 기능 단위 작업 | 담당 파트 브랜치(`frontend-dev` / `backend-dev`)로 PR |
+| 브랜치 | 대상 파트 | 기술 스택 | 병합 규칙 |
+| --- | --- | --- | --- |
+| `main` | 제출·심사용 최종 배포 안정 버전 | 전체 통합본 | 🔒 보호 브랜치 (`test`에서 검증 후 PR 병합) |
+| `test` | 통합 테스트 및 시연 E2E 검증 | 전체 연동 | 🔒 보호 브랜치 (`pleos-dev`, `web-dev`, `backend-dev` 머지 후 테스트) |
+| `pleos-dev` | 🚗 **플레오스 차량용 앱 (`vehicle-app`)** | Kotlin, Jetpack Compose, Vehicle SDK 2.3.2 | 🛠️ 차량 앱 기능 개발 후 PR 또는 병합 |
+| `web-dev` | 🖥️ **매장 점주용 웹 POS (`pos-web`)** | React 19, TypeScript, Vite, Tailwind | 🛠️ 웹 POS 기능 개발 후 PR 또는 병합 |
+| `backend-dev` | ⚙️ **중계 서버 (`server`)** | Java 21, Spring Boot, STOMP WebSocket | 🛠️ 백엔드 기능 개발 후 PR 또는 병합 |
+| `feature/기능명` | 개별 세부 기능 단위 작업 | - | 각 담당 파트 브랜치로 PR |
 
-- **배포 및 통합 플로우**: `feature/*` ➡️ `frontend-dev` or `backend-dev` ➡️ `test` (통합 검증) ➡️ `main` (최종 릴리스)
+- **배포 및 통합 플로우**: `feature/*` ➡️ `pleos-dev` / `web-dev` / `backend-dev` ➡️ `test` (통합 검증) ➡️ `main` (최종 릴리스)
 - `main`, `test`는 보호 브랜치로 직접 푸시와 강제 푸시(`force push`)가 차단되어 있으며 PR로만 병합합니다.
-- 병합은 머지 커밋 또는 스쿼시를 사용하며, 병합된 작업 브랜치는 자동 정리됩니다.
+- `pleos-dev`, `web-dev`, `backend-dev`는 안전한 협업을 위해 강제 푸시 및 브랜치 삭제가 방지되어 있습니다.
 - 공개 저장소이므로 API 키, DB 비밀번호, `local.properties`, `.env`는 커밋하지 않습니다.
