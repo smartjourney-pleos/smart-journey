@@ -33,6 +33,7 @@ local.properties
 *.aab
 *.keystore
 *.jks
+.agents
 
 # Java / Spring Boot (server)
 target/

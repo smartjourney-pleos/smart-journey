@@ -31,7 +31,7 @@ export function usePosStomp(
       onConnect: () => {
         setStatus({ isConnected: true, reconnectAttempts: 0 });
 
-        // 매장 큐 토픽 구독
+        // 1. 매장 큐 종합 토픽 구독
         client.subscribe(`/topic/stores/${storeId}/queue`, (message) => {
           try {
             const body = JSON.parse(message.body);
@@ -39,7 +39,19 @@ export function usePosStomp(
               onQueueUpdated(body);
             }
           } catch (e) {
-            console.error('STOMP 메시지 파싱 오류:', e);
+            console.error('STOMP 메시지 파싱 오류 (/topic/stores):', e);
+          }
+        });
+
+        // 2. POS 개별 텔레메트리 및 하차 센서 이벤트 토픽 구독
+        client.subscribe(`/topic/pos/${storeId}`, (message) => {
+          try {
+            const body = JSON.parse(message.body);
+            if (onQueueUpdated) {
+              onQueueUpdated(body);
+            }
+          } catch (e) {
+            console.error('STOMP 메시지 파싱 오류 (/topic/pos):', e);
           }
         });
       },
@@ -77,3 +89,5 @@ export function usePosStomp(
 
   return status;
 }
+
+export default usePosStomp;
