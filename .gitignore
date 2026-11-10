@@ -1,43 +1,26 @@
-# OS & Editors
-.DS_Store
-Thumbs.db
-*.swp
-*.swo
-.idea/
-.vscode/
-*.iml
+# Logs
+logs
+*.log
+npm-debug.log*
 
-# Node / Vite (pos-web)
-node_modules/
-dist/
-dist-ssr/
+# Dependencies / build
+node_modules
+dist
+dist-ssr
 *.local
+
+# Env / secrets
 .env
 .env.*
 !.env.example
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
 
-# Android / Gradle (vehicle-app)
-.gradle/
-build/
-app/build/
-core-*/build/
-domain/build/
-local.properties
-*.apk
-!apk/*.apk
-!apk/.gitkeep
-*.aab
-*.keystore
-*.jks
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.sw?
 
-# Java / Spring Boot (server)
-target/
-*.class
-*.jar
-*.war
-!app/libs/*.aar
-!libs/*.aar
+# Agent working files
+.agents
