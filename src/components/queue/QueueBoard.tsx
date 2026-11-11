@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Users, Car, Hourglass, Sparkles } from 'lucide-react';
 import type { QueueFilterTab, WaitingItem } from '../../types/pos';
 import { WaitingCard } from './WaitingCard';
 
@@ -46,93 +45,53 @@ export const QueueBoard: React.FC<QueueBoardProps> = ({
   }, [queue, filter]);
 
   return (
-    <div className="flex-1 flex flex-col p-6 overflow-hidden">
-      {/* 1. 상단 요약 통계 카드 (단위 테스트 호환을 위해 showSummary true일 때만 렌더) */}
+    <div className="flex-1 flex flex-col px-6 pt-6 overflow-hidden">
       {showSummary && (
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
-            <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center shrink-0">
-              <Users className="w-6 h-6" />
-            </div>
-            <div>
-              <span className="text-xs text-slate-400 font-medium block">현재 총 대기</span>
-              <div className="flex items-baseline gap-1.5 mt-0.5">
-                <span className="text-2xl font-extrabold text-white font-mono tabular-nums leading-none">
-                  {aheadTeams}
+        <div className="grid grid-cols-3 divide-x divide-line bg-surface border border-line rounded-lg mb-5">
+          {[
+            { label: '현재 총 대기', value: aheadTeams, unit: '팀' },
+            { label: '차량 원격 웨이팅', value: vehicleCount, unit: '팀' },
+            { label: '예상 대기 시간', value: estimatedWaitMin, unit: '분' },
+          ].map((stat) => (
+            <div key={stat.label} className="px-5 py-4">
+              <span className="text-sm text-ink-2 block">{stat.label}</span>
+              <div className="flex items-baseline gap-1.5 mt-1">
+                <span className="text-3xl font-bold text-ink tabular-nums leading-none">
+                  {stat.value}
                 </span>
-                <span className="text-xs text-slate-400 font-medium">팀</span>
+                <span className="text-sm text-ink-2">{stat.unit}</span>
               </div>
             </div>
-          </div>
-
-          <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
-            <div className="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center shrink-0">
-              <Car className="w-6 h-6" />
-            </div>
-            <div>
-              <span className="text-xs text-slate-400 font-medium block">차량 원격 웨이팅</span>
-              <div className="flex items-baseline gap-1.5 mt-0.5">
-                <span className="text-2xl font-extrabold text-cyan-400 font-mono tabular-nums leading-none">
-                  {vehicleCount}
-                </span>
-                <span className="text-xs text-slate-400 font-medium">팀</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
-            <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center shrink-0">
-              <Hourglass className="w-6 h-6" />
-            </div>
-            <div>
-              <span className="text-xs text-slate-400 font-medium block">예상 대기 시간</span>
-              <div className="flex items-baseline gap-1.5 mt-0.5">
-                <span className="text-2xl font-extrabold text-amber-400 font-mono tabular-nums leading-none">
-                  {estimatedWaitMin}
-                </span>
-                <span className="text-xs text-slate-400 font-medium">분</span>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       )}
 
-      {/* 2. 대기 목록 타이틀 및 범례 */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <h2 className="text-lg font-bold text-white">실시간 웨이팅 현황</h2>
-          <span className="text-xs bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700 font-mono tabular-nums">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 mb-4">
+        <h2 className="text-lg font-bold text-ink whitespace-nowrap">
+          실시간 웨이팅 현황
+          <span className="ml-2 text-base font-medium text-ink-2 tabular-nums">
             {filteredQueue.length} 건
           </span>
-        </div>
-        <div className="flex items-center gap-3 text-xs text-slate-400">
-          <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400"></span> 차량 자동 등록
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-slate-500"></span> 현장 등록
-          </span>
-        </div>
+        </h2>
       </div>
 
       {/* 3. 대기열 카드 그리드 (태블릿 최적화 스크롤 + FLIP motion popLayout) */}
-      <div className="flex-1 overflow-y-auto pr-1">
+      <div className="flex-1 overflow-y-auto -mx-6 px-6 pb-6">
         {filteredQueue.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-            className="h-full flex flex-col items-center justify-center text-slate-500 border border-dashed border-slate-800 rounded-3xl p-12 select-none"
+            className="h-full flex flex-col items-center justify-center p-12 select-none"
           >
-            <Sparkles className="w-12 h-12 text-slate-600 mb-3" />
-            <p className="text-base font-semibold text-slate-300">현재 대기 중인 고객이 없습니다.</p>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-base font-semibold text-ink">현재 대기 중인 고객이 없습니다.</p>
+            <p className="text-sm text-ink-2 mt-1">
               차량 앱이나 현장에서 새 웨이팅이 접수되면 실시간으로 표시됩니다.
             </p>
           </motion.div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
             {((globalThis as unknown as { process?: { env?: Record<string, string> } }).process?.env?.NODE_ENV === 'test' ||
               import.meta.env?.MODE === 'test') ? (
               filteredQueue.map((item) => (

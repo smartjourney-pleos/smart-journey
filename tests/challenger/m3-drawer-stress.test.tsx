@@ -19,7 +19,7 @@ describe('Milestone M3 Empirical Challenger Stress Suite: Detail Drawer, Telemet
       expect(screen.queryByText('대기 상세 정보')).toBeNull();
 
       // Click card 12 on QueueBoard
-      const card12 = screen.getByText('12').closest('div[class*="rounded-2xl"]');
+      const card12 = screen.getByText('12').closest('div[class*="rounded-lg"]');
       expect(card12).not.toBeNull();
       fireEvent.click(card12!);
 
@@ -30,7 +30,7 @@ describe('Milestone M3 Empirical Challenger Stress Suite: Detail Drawer, Telemet
 
       // Drawer has large ticket number 12, customer name, and party size with '명'
       expect(within(drawer).getByText('12')).toBeDefined();
-      expect(within(drawer).getByText('김*수 (Pleos Connect)')).toBeDefined();
+      expect(within(drawer).getByText('김*수')).toBeDefined();
       expect(within(drawer).getByText('4명')).toBeDefined();
       expect(within(drawer).getByText('다음 입장')).toBeDefined();
     });
@@ -39,14 +39,14 @@ describe('Milestone M3 Empirical Challenger Stress Suite: Detail Drawer, Telemet
       await renderLoggedInApp();
 
       // Select Card 12
-      const card12 = screen.getByText('12').closest('div[class*="rounded-2xl"]');
+      const card12 = screen.getByText('12').closest('div[class*="rounded-lg"]');
       fireEvent.click(card12!);
       let drawer = screen.getByText('대기 상세 정보').closest('aside')!;
       expect(within(drawer).getByText('12')).toBeDefined();
       expect(within(drawer).getByText('4명')).toBeDefined();
 
       // Select Card 13 (2명, position 2)
-      const card13 = screen.getByText('13').closest('div[class*="rounded-2xl"]');
+      const card13 = screen.getByText('13').closest('div[class*="rounded-lg"]');
       fireEvent.click(card13!);
 
       // Now drawer reflects ticket 13
@@ -59,7 +59,7 @@ describe('Milestone M3 Empirical Challenger Stress Suite: Detail Drawer, Telemet
     it('empirically verifies clicking the already selected card toggles/closes the drawer', async () => {
       await renderLoggedInApp();
 
-      const card12 = screen.getByText('12').closest('div[class*="rounded-2xl"]');
+      const card12 = screen.getByText('12').closest('div[class*="rounded-lg"]');
       // 1st click -> opens drawer
       fireEvent.click(card12!);
       expect(screen.getByText('대기 상세 정보')).toBeDefined();
@@ -72,7 +72,7 @@ describe('Milestone M3 Empirical Challenger Stress Suite: Detail Drawer, Telemet
     it('empirically verifies close button (aria-label="상세 닫기") unmounts drawer and restores DemoPanel', async () => {
       await renderLoggedInApp();
 
-      const card12 = screen.getByText('12').closest('div[class*="rounded-2xl"]');
+      const card12 = screen.getByText('12').closest('div[class*="rounded-lg"]');
       fireEvent.click(card12!);
       expect(screen.getByText('대기 상세 정보')).toBeDefined();
 
@@ -130,7 +130,7 @@ describe('Milestone M3 Empirical Challenger Stress Suite: Detail Drawer, Telemet
         { phone: '01099998888', expected: '010-****-8888' },
         { phone: '0101234567', expected: '010-***-4567' },
         { phone: '010-****-0000', expected: '010-****-0000' },
-        { phone: undefined, expected: '010-****-1234' },
+        { phone: undefined, expected: '' },
       ];
 
       for (const tc of testCases) {
@@ -150,7 +150,12 @@ describe('Milestone M3 Empirical Challenger Stress Suite: Detail Drawer, Telemet
           />
         );
 
-        expect(screen.getByText(tc.expected)).toBeDefined();
+        if (tc.expected) {
+          expect(screen.getByText(tc.expected)).toBeDefined();
+        } else {
+          // 번호가 없으면 지어낸 번호를 보여주지 않는다
+          expect(screen.queryByText(/010-/)).toBeNull();
+        }
         unmount();
       }
     });
@@ -237,8 +242,8 @@ describe('Milestone M3 Empirical Challenger Stress Suite: Detail Drawer, Telemet
       expect(screen.getByText('현장 방문 접수 (차량 연동 없음)')).toBeDefined();
       // Vehicle telemetry box is NOT rendered
       expect(screen.queryByText('차량 및 주행 텔레메트리')).toBeNull();
-      // Customer name fallback defaults to 현장 접수
-      expect(screen.getByText('이*민 (현장 접수)')).toBeDefined();
+      // 이름이 없으면 지어내지 않고 미등록으로 표시
+      expect(screen.getByText('이름 미등록')).toBeDefined();
     });
 
     it('empirically verifies etaMin <= 0 displays "도착 완료" across negative and zero boundaries', () => {
@@ -386,8 +391,8 @@ describe('Milestone M3 Empirical Challenger Stress Suite: Detail Drawer, Telemet
       );
 
       expect(screen.getByText('원격 웨이팅 접수')).toBeDefined();
-      expect(screen.getByText('ETA 실시간 갱신')).toBeDefined();
-      expect(screen.getByText(/도착 예정 10분/)).toBeDefined();
+      // 시각을 알 수 없는 ETA 이벤트는 지어내지 않는다
+      expect(screen.queryByText('ETA 실시간 갱신')).toBeNull();
       unmount1();
 
       // 2. Arrived vehicle team
@@ -537,17 +542,17 @@ describe('Milestone M3 Empirical Challenger Stress Suite: Detail Drawer, Telemet
       expect(screen.getByText('위험 경보 이벤트')).toBeDefined();
 
       // Verify marker classes exist in container
-      expect(container.querySelector('.border-blue-500')).not.toBeNull();
-      expect(container.querySelector('.bg-blue-400')).not.toBeNull();
+      expect(container.querySelector('.border-ink-2')).not.toBeNull();
+      expect(container.querySelector('.bg-ink-2')).not.toBeNull();
 
-      expect(container.querySelector('.border-emerald-500')).not.toBeNull();
-      expect(container.querySelector('.bg-emerald-400')).not.toBeNull();
+      expect(container.querySelector('.border-main')).not.toBeNull();
+      expect(container.querySelector('.bg-main')).not.toBeNull();
 
-      expect(container.querySelector('.border-amber-500')).not.toBeNull();
-      expect(container.querySelector('.bg-amber-400')).not.toBeNull();
+      expect(container.querySelector('.border-sub')).not.toBeNull();
+      expect(container.querySelector('.bg-sub')).not.toBeNull();
 
-      expect(container.querySelector('.border-rose-500')).not.toBeNull();
-      expect(container.querySelector('.bg-rose-400')).not.toBeNull();
+      expect(container.querySelector('.border-danger')).not.toBeNull();
+      expect(container.querySelector('.bg-danger')).not.toBeNull();
     });
 
     it('empirically verifies stress test with 15+ chronological timeline entries renders cleanly without layout disruption', () => {
@@ -663,7 +668,7 @@ describe('Milestone M3 Empirical Challenger Stress Suite: Detail Drawer, Telemet
       await renderLoggedInApp();
 
       // Select Card 13 (currently REGISTERED)
-      const card13 = screen.getByText('13').closest('div[class*="rounded-2xl"]');
+      const card13 = screen.getByText('13').closest('div[class*="rounded-lg"]');
       fireEvent.click(card13!);
 
       const drawer = screen.getByText('대기 상세 정보').closest('aside')!;
@@ -680,7 +685,7 @@ describe('Milestone M3 Empirical Challenger Stress Suite: Detail Drawer, Telemet
       await renderLoggedInApp();
 
       // Select Card 12
-      const card12 = screen.getByText('12').closest('div[class*="rounded-2xl"]');
+      const card12 = screen.getByText('12').closest('div[class*="rounded-lg"]');
       fireEvent.click(card12!);
 
       const drawer = screen.getByText('대기 상세 정보').closest('aside')!;
@@ -707,7 +712,7 @@ describe('Milestone M3 Empirical Challenger Stress Suite: Detail Drawer, Telemet
       await renderLoggedInApp();
 
       // Select Card 12
-      const card12 = screen.getByText('12').closest('div[class*="rounded-2xl"]');
+      const card12 = screen.getByText('12').closest('div[class*="rounded-lg"]');
       fireEvent.click(card12!);
 
       const drawer = screen.getByText('대기 상세 정보').closest('aside')!;
@@ -730,7 +735,7 @@ describe('Milestone M3 Empirical Challenger Stress Suite: Detail Drawer, Telemet
       await renderLoggedInApp();
 
       // Select Card 13
-      const card13 = screen.getByText('13').closest('div[class*="rounded-2xl"]');
+      const card13 = screen.getByText('13').closest('div[class*="rounded-lg"]');
       fireEvent.click(card13!);
 
       const drawer = screen.getByText('대기 상세 정보').closest('aside')!;

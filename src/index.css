@@ -1,23 +1,36 @@
 @import "tailwindcss";
 
 @theme {
-  /* Emil Kowalski Motion Easing Curves */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 
-  /* Pleos Connect Dark POS Theme Palette */
-  --color-pos-bg: #090d16;
-  --color-pos-card: #131c2e;
-  --color-pos-card-hover: #1e293b;
-  --color-pos-border: #1e293b;
+  /* 바탕: 차가운 회백 위에 흰 면 */
+  --color-ground: #f1f2ef;
+  --color-surface: #ffffff;
+  --color-sunken: #e6e8e4;
+  --color-line: #d3d7d1;
+  --color-ink: #232624;
+  --color-ink-2: #565c57;
+
+  /* 메인: 고속도로 표지판 그린 */
+  --color-main: #00694b;
+  --color-main-strong: #00553c;
+  --color-main-tint: #dceee5;
+
+  /* 보조: 도로 중앙선 옐로 */
+  --color-sub: #f2b100;
+  --color-sub-strong: #d99b00;
+  --color-sub-tint: #fbeec2;
+
+  /* 경고: 브레이크등 레드 (노쇼·종료 전용) */
+  --color-danger: #b63829;
+  --color-danger-strong: #9a2e21;
+  --color-danger-tint: #f5deda;
 }
 
 :root {
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
-  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
-  font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
 }
 
 /* Tablet & Mobile Native Shell Reset */
@@ -27,8 +40,8 @@ html, body {
   overflow: hidden;
   margin: 0;
   padding: 0;
-  background-color: #090d16;
-  color: #f8fafc;
+  background-color: var(--color-ground);
+  color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
@@ -60,7 +73,12 @@ button, [role="button"], .interactive-control, nav, header {
   font-variant-numeric: tabular-nums;
 }
 
-/* Emil Kowalski tactile active scale feedback */
+:focus-visible {
+  outline: 2px solid var(--color-main);
+  outline-offset: 2px;
+}
+
+/* Tactile press feedback */
 .active-press {
   transition: transform 120ms var(--ease-out);
 }
@@ -68,54 +86,35 @@ button, [role="button"], .interactive-control, nav, header {
   transform: scale(0.97);
 }
 
-/* Hover isolation: prevent sticky hover state on touch tablets */
+/* Hover only on fine pointers: no sticky hover on touch tablets */
 @media (hover: hover) and (pointer: fine) {
-  .hover-elevate:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  .touch-hover-sunken:hover {
+    background-color: var(--color-sunken);
   }
 
-  /* Tactile header button hover states isolated exclusively for fine pointing devices */
-  .touch-hover-slate-700:hover {
-    background-color: var(--color-slate-700, #334155);
+  .touch-hover-line:hover {
+    border-color: var(--color-ink-2);
   }
 
-  .touch-hover-rose-900:hover {
-    background-color: color-mix(in oklab, var(--color-rose-900, #881337) 50%, transparent);
+  .touch-hover-main:hover {
+    background-color: var(--color-main-strong);
   }
 
-  /* M2 WaitingCard hover isolation tokens */
-  .touch-hover-border-slate-600:hover {
-    border-color: var(--color-slate-600, #475569);
+  .touch-hover-sub:hover {
+    background-color: var(--color-sub-strong);
   }
 
-  .touch-hover-indigo-500:hover {
-    background-color: var(--color-indigo-500, #6366f1);
+  .touch-hover-danger:hover {
+    background-color: var(--color-danger-tint);
+    color: var(--color-danger);
   }
 
-  .touch-hover-amber-400:hover {
-    background-color: var(--color-amber-400, #fbbf24);
+  .touch-hover-danger-solid:hover {
+    background-color: var(--color-danger-strong);
   }
 
-  .touch-hover-emerald-500:hover {
-    background-color: var(--color-emerald-500, #10b981);
-  }
-
-  .touch-hover-rose-900-70:hover {
-    background-color: color-mix(in oklab, var(--color-rose-900, #881337) 70%, transparent);
-  }
-
-  .touch-hover-text-rose-200:hover {
-    color: var(--color-rose-200, #fecdd3);
-  }
-
-  /* M2 StoreSummary filter tab hover isolation tokens */
-  .touch-hover-slate-800-70:hover {
-    background-color: color-mix(in oklab, var(--color-slate-800, #1e293b) 70%, transparent);
-  }
-
-  .touch-hover-text-slate-200:hover {
-    color: var(--color-slate-200, #e2e8f0);
+  .touch-hover-ink:hover {
+    color: var(--color-ink);
   }
 }
 

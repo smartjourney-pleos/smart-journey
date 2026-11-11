@@ -75,7 +75,7 @@ describe('Milestone M3 Empirical Challenger: Dialog Interception & STOMP Stress 
       ).toBeDefined();
 
       // Verify dialog shows targeted team info
-      const dialogModal = screen.getByText('착석 완료 처리').closest('.bg-slate-900')!;
+      const dialogModal = screen.getByText('착석 완료 처리').closest('.bg-surface')!;
       expect(within(dialogModal).getByText('No. 13')).toBeDefined();
       expect(within(dialogModal).getByText('2명')).toBeDefined();
 
@@ -105,7 +105,7 @@ describe('Milestone M3 Empirical Challenger: Dialog Interception & STOMP Stress 
         )
       ).toBeDefined();
 
-      const dialogModal = screen.getByText('노쇼(미방문) 처리').closest('.bg-slate-900')!;
+      const dialogModal = screen.getByText('노쇼(미방문) 처리').closest('.bg-surface')!;
       expect(within(dialogModal).getByText('No. 13')).toBeDefined();
       expect(within(dialogModal).getByRole('button', { name: /노쇼 처리/i })).toBeDefined();
 
@@ -147,7 +147,7 @@ describe('Milestone M3 Empirical Challenger: Dialog Interception & STOMP Stress 
 
       // Drawer must remain mounted and active
       expect(screen.getByText('대기 상세 정보')).toBeDefined();
-      expect(within(drawer).getByText('Genesis GV70 · 123가 4567')).toBeDefined();
+      expect(within(drawer).getByText('IONIQ 5 · 45나 6789')).toBeDefined();
     });
 
     it('clicking close button (X) dismisses ConfirmDialog without modifying queue or drawer', async () => {
@@ -210,7 +210,7 @@ describe('Milestone M3 Empirical Challenger: Dialog Interception & STOMP Stress 
       expect(screen.getByText('착석 완료 처리')).toBeDefined();
 
       // Click inside modal card -> should NOT close (stopPropagation test)
-      const modalCard = screen.getByText('착석 완료 처리').closest('.bg-slate-900')!;
+      const modalCard = screen.getByText('착석 완료 처리').closest('.bg-surface')!;
       fireEvent.click(modalCard);
       expect(screen.getByText('착석 완료 처리')).toBeDefined();
 

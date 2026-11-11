@@ -28,6 +28,10 @@ export const initialMockQueue: PosQueueResponse = {
       arrivalResult: 'CONFIRMED',
       alighted: 4,
       registeredAt: '14:20:15',
+      customerName: '김*수',
+      phone: '010-****-1234',
+      vehicleModel: 'Genesis GV70',
+      vehicleNumber: '123가 4567',
     },
     {
       id: 'wait-102',
@@ -40,6 +44,10 @@ export const initialMockQueue: PosQueueResponse = {
       arrivalResult: null,
       alighted: null,
       registeredAt: '14:25:30',
+      customerName: '박*현',
+      phone: '010-****-5678',
+      vehicleModel: 'IONIQ 5',
+      vehicleNumber: '45나 6789',
     },
     {
       id: 'wait-103',
@@ -52,6 +60,8 @@ export const initialMockQueue: PosQueueResponse = {
       arrivalResult: null,
       alighted: null,
       registeredAt: '14:31:00',
+      customerName: '이*민',
+      phone: '010-****-9012',
     },
   ],
 };

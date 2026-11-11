@@ -10,9 +10,7 @@ describe('Milestone M2 Iteration 2 Bounds Challenger Empirical Stress Suite', ()
   // Helper to extract the walk-in count text from StoreSummary's 4th stat card
   const getWalkInStatValue = (container: HTMLElement): number => {
     const label = within(container).getByText('현장 대기');
-    const statCard = label.closest('.bg-\\[\\#131c2e\\]') as HTMLElement;
-    expect(statCard).not.toBeNull();
-    const valueSpan = statCard.querySelector('.text-2xl.font-extrabold.text-emerald-400') as HTMLElement;
+    const valueSpan = label.parentElement!.querySelector('.tabular-nums') as HTMLElement;
     expect(valueSpan).not.toBeNull();
     // Strip zero-width space \u200B
     const cleanText = (valueSpan.textContent || '').replace(/\u200B/g, '').trim();
@@ -65,7 +63,7 @@ describe('Milestone M2 Iteration 2 Bounds Challenger Empirical Stress Suite', ()
             expect(btn.className).toContain('active-press');
             expect(btn.className).toContain('cursor-pointer');
             expect(btn.className).toContain('select-none');
-            expect(btn.className).toContain('rounded-xl');
+            expect(btn.className).toContain('rounded-md');
 
             // Zero raw hover utilities (strictly isolated via touch-hover-*)
             expect(btn.className).not.toMatch(/\bhover:/);
@@ -107,7 +105,7 @@ describe('Milestone M2 Iteration 2 Bounds Challenger Empirical Stress Suite', ()
           expect(btn.className).toContain('active-press');
           expect(btn.className).toContain('cursor-pointer');
           expect(btn.className).toContain('select-none');
-          expect(btn.className).toContain('rounded-xl');
+          expect(btn.className).toContain('rounded-md');
 
           // Sticky hover isolation check
           expect(btn.className).not.toMatch(/\bhover:/);
@@ -270,7 +268,7 @@ describe('Milestone M2 Iteration 2 Bounds Challenger Empirical Stress Suite', ()
       expect(onSelect).toHaveBeenCalledTimes(0);
 
       // Verify that clicking directly on the card background STILL works as intended
-      const cardContainer = callBtn.closest('.rounded-2xl') as HTMLElement;
+      const cardContainer = callBtn.closest('.rounded-lg') as HTMLElement;
       expect(cardContainer).not.toBeNull();
       fireEvent.click(cardContainer);
 
@@ -684,7 +682,7 @@ describe('Milestone M2 Iteration 2 Bounds Challenger Empirical Stress Suite', ()
       expect(() => fireEvent.click(callBtn)).not.toThrow();
       expect(onCall).toHaveBeenCalledWith('no-select-cb');
 
-      const card = callBtn.closest('.rounded-2xl') as HTMLElement;
+      const card = callBtn.closest('.rounded-lg') as HTMLElement;
       expect(() => fireEvent.click(card)).not.toThrow();
     });
 
@@ -758,7 +756,7 @@ describe('Milestone M2 Iteration 2 Bounds Challenger Empirical Stress Suite', ()
       const reCallBtn = screen.getByRole('button', { name: /재호출/i });
       expect(reCallBtn.className).toContain('min-h-[48px]');
       expect(reCallBtn.className).toContain('h-12');
-      expect(reCallBtn.className).toContain('bg-amber-500');
+      expect(reCallBtn.className).toContain('bg-surface');
 
       fireEvent.click(reCallBtn);
       expect(onCall).toHaveBeenCalledTimes(2);

@@ -15,15 +15,11 @@ describe('Tier 1 - Feature 05: Queue Filter Tabs & Categories', () => {
     expect(countBadge).toBeDefined();
   });
 
-  it('renders vehicle channel indicator badge ("차량 자동 등록")', async () => {
+  it('labels each card with its channel instead of a separate legend', async () => {
     await renderLoggedInApp();
-    expect(screen.getByText(/차량 자동 등록/i)).toBeDefined();
-  });
-
-  it('renders walk-in channel indicator badge ("현장 등록")', async () => {
-    await renderLoggedInApp();
-    const badges = screen.getAllByText(/현장 등록/i);
-    expect(badges.length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('차량 인증').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('일반 현장').length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText(/차량 자동 등록/)).toBeNull();
   });
 
   it('reflects correct queue count badge for custom queue sizes', () => {

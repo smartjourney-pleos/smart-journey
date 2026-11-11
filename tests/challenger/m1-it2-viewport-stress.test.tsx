@@ -128,7 +128,7 @@ describe('M1 Iteration 2 Challenger: Viewport & Layout Empirical Stress Suite', 
       expect(h1?.parentElement?.className).toContain('min-w-0');
 
       // Verify right action container has shrink-0 to prevent compression
-      const rightContainer = container.querySelector('.flex.items-center.space-x-4');
+      const rightContainer = container.querySelector('.flex.items-center.gap-5');
       expect(rightContainer?.className).toContain('shrink-0');
 
       // Verify all three control buttons remain mounted and interactive
@@ -221,11 +221,11 @@ describe('M1 Iteration 2 Challenger: Viewport & Layout Empirical Stress Suite', 
         />
       );
 
-      // Demo button when closed: slate background with touch-hover-slate-700
+      // Demo button when closed: slate background with touch-hover-sunken
       let demoBtn = screen.getByRole('button', { name: /데모 컨트롤러 토글/i });
-      expect(demoBtn.className).toContain('bg-slate-800');
-      expect(demoBtn.className).toContain('touch-hover-slate-700');
-      expect(demoBtn.className).toContain('text-slate-300');
+      expect(demoBtn.className).toContain('bg-surface');
+      expect(demoBtn.className).toContain('touch-hover-sunken');
+      expect(demoBtn.className).toContain('text-ink');
 
       // Rerender with isDemoOpen = true
       rerender(
@@ -240,9 +240,9 @@ describe('M1 Iteration 2 Challenger: Viewport & Layout Empirical Stress Suite', 
       );
 
       demoBtn = screen.getByRole('button', { name: /데모 컨트롤러 토글/i });
-      expect(demoBtn.className).toContain('bg-amber-500/20');
-      expect(demoBtn.className).toContain('text-amber-300');
-      expect(demoBtn.className).toContain('border-amber-500/40');
+      expect(demoBtn.className).toContain('bg-sub-tint');
+      expect(demoBtn.className).toContain('text-ink');
+      expect(demoBtn.className).toContain('border-sub');
     });
 
     it('gracefully renders when onToggleDemo is omitted', () => {
@@ -283,9 +283,8 @@ describe('M1 Iteration 2 Challenger: Viewport & Layout Empirical Stress Suite', 
 
       // Connected state
       expect(screen.getByText('실시간 연동 중')).toBeDefined();
-      const connectedPill = screen.getByText('실시간 연동 중').parentElement;
-      expect(connectedPill?.className).toContain('bg-emerald-950/60');
-      expect(connectedPill?.className).toContain('text-emerald-400');
+      const connectedDot = screen.getByText('실시간 연동 중').previousElementSibling;
+      expect(connectedDot?.className).toContain('bg-main');
 
       // Disconnected / Reconnecting state
       rerender(
@@ -298,10 +297,9 @@ describe('M1 Iteration 2 Challenger: Viewport & Layout Empirical Stress Suite', 
       );
 
       expect(screen.getByText('실시간 재연결 중')).toBeDefined();
-      const disconnectedPill = screen.getByText('실시간 재연결 중').parentElement;
-      expect(disconnectedPill?.className).toContain('bg-amber-950/60');
-      expect(disconnectedPill?.className).toContain('text-amber-400');
-      expect(disconnectedPill?.className).toContain('animate-pulse');
+      const disconnectedDot = screen.getByText('실시간 재연결 중').previousElementSibling;
+      expect(disconnectedDot?.className).toContain('bg-sub');
+      expect(disconnectedDot?.className).not.toContain('animate-');
     });
 
     it('verifies clock formatting and periodic tick isolation', () => {
@@ -317,8 +315,8 @@ describe('M1 Iteration 2 Challenger: Viewport & Layout Empirical Stress Suite', 
 
       const clockContainer = container.querySelector('.tabular-nums');
       expect(clockContainer).not.toBeNull();
-      expect(clockContainer?.className).toContain('font-mono');
-      expect(clockContainer?.className).toContain('min-w-[105px]');
+      expect(clockContainer?.className).toContain('tabular-nums');
+      expect(clockContainer?.className).toContain('min-w-[78px]');
 
       // Advance by 1 second
       act(() => {
@@ -326,8 +324,7 @@ describe('M1 Iteration 2 Challenger: Viewport & Layout Empirical Stress Suite', 
       });
 
       // Clock string should have 8 chars (HH:mm:ss)
-      const clockSpan = clockContainer?.querySelector('span');
-      expect(clockSpan?.textContent).toMatch(/^\d{2}:\d{2}:\d{2}$/);
+      expect(clockContainer?.textContent).toMatch(/^\d{2}:\d{2}:\d{2}$/);
     });
   });
 });

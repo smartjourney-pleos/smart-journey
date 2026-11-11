@@ -40,7 +40,7 @@ describe('Milestone M4 Challenger: Slot Arbitration & Micro-Interaction Stress S
 
       // DemoPanel is mounted by default when isDemoOpen is true
       expect(screen.getByText('시연 제어 패널')).toBeDefined();
-      expect(screen.getByText('심사·시연 데모 컨트롤러')).toBeDefined();
+      expect(screen.getByText('시연 제어 패널')).toBeDefined();
       expect(screen.getByText('실시간 연동')).toBeDefined();
 
       // TeamDetailDrawer is not mounted initially
@@ -63,11 +63,11 @@ describe('Milestone M4 Challenger: Slot Arbitration & Micro-Interaction Stress S
 
       // TeamDetailDrawer must mount
       expect(screen.getByText('대기 상세 정보')).toBeDefined();
-      expect(screen.getByText('김*수 (Pleos Connect)')).toBeDefined();
+      expect(screen.getAllByText('김*수').length).toBeGreaterThanOrEqual(2);
 
       // DemoPanel must be cleanly unmounted (no coexistence / slot collision)
       expect(screen.queryByText('시연 제어 패널')).toBeNull();
-      expect(screen.queryByText('심사·시연 데모 컨트롤러')).toBeNull();
+      expect(screen.queryByText('시연 제어 패널')).toBeNull();
 
       // Exactly one contextual aside in the right column
       const drawerAside = screen.getByText('대기 상세 정보').closest('aside')!;
@@ -87,7 +87,7 @@ describe('Milestone M4 Challenger: Slot Arbitration & Micro-Interaction Stress S
       fireEvent.click(card12);
       expect(screen.queryByText('대기 상세 정보')).toBeNull();
       expect(screen.getByText('시연 제어 패널')).toBeDefined();
-      expect(screen.getByText('심사·시연 데모 컨트롤러')).toBeDefined();
+      expect(screen.getByText('시연 제어 패널')).toBeDefined();
     });
 
     it('empirically verifies closing TeamDetailDrawer via [상세 닫기] button restores DemoPanel', async () => {
@@ -136,7 +136,7 @@ describe('Milestone M4 Challenger: Slot Arbitration & Micro-Interaction Stress S
 
       // DemoPanel unmounts
       expect(screen.queryByText('시연 제어 패널')).toBeNull();
-      expect(screen.queryByText('심사·시연 데모 컨트롤러')).toBeNull();
+      expect(screen.queryByText('시연 제어 패널')).toBeNull();
       expect(screen.queryByText('대기 상세 정보')).toBeNull();
 
       // Verify the right contextual aside is collapsed/absent
@@ -158,7 +158,7 @@ describe('Milestone M4 Challenger: Slot Arbitration & Micro-Interaction Stress S
 
       // DemoPanel should now be visible again
       expect(screen.getByText('시연 제어 패널')).toBeDefined();
-      expect(screen.getByText('심사·시연 데모 컨트롤러')).toBeDefined();
+      expect(screen.getByText('시연 제어 패널')).toBeDefined();
     });
 
     it('empirically verifies drawer restoration and collapse semantics when isDemoOpen was false', async () => {
@@ -498,22 +498,22 @@ describe('Milestone M4 Challenger: Slot Arbitration & Micro-Interaction Stress S
       );
 
       const closeBtn = screen.getByRole('button', { name: '데모 닫기' });
-      expect(closeBtn.className).toContain('touch-hover-slate-700');
+      expect(closeBtn.className).toContain('touch-hover-sunken');
 
       const addBtn = screen.getByRole('button', { name: '현장 +1팀' });
-      expect(addBtn.className).toContain('touch-hover-indigo-500');
+      expect(addBtn.className).toContain('touch-hover-sunken');
 
       const removeBtn = screen.getByRole('button', { name: '현장 -1팀' });
-      expect(removeBtn.className).toContain('touch-hover-slate-700');
+      expect(removeBtn.className).toContain('touch-hover-sunken');
 
       const goldenTimeBtn = screen.getByRole('button', { name: '+3팀 골든타임 시연' });
-      expect(goldenTimeBtn.className).toContain('touch-hover-amber-400');
+      expect(goldenTimeBtn.className).toContain('touch-hover-sub');
 
       const arrivalBtn = screen.getByRole('button', { name: '하차 확인 이벤트 발생' });
-      expect(arrivalBtn.className).toContain('touch-hover-emerald-500');
+      expect(arrivalBtn.className).toContain('touch-hover-sunken');
 
       const resetBtn = screen.getByRole('button', { name: /시연 초기 상태로 리셋/i });
-      expect(resetBtn.className).toContain('touch-hover-slate-700');
+      expect(resetBtn.className).toContain('touch-hover-line');
     });
 
     it('empirically verifies index.css isolates .touch-hover-* rules inside @media (hover: hover) and (pointer: fine)', () => {
@@ -534,11 +534,11 @@ describe('Milestone M4 Challenger: Slot Arbitration & Micro-Interaction Stress S
       const mediaContent = css.slice(mediaStart, reducedMotionStart > -1 ? reducedMotionStart : undefined);
 
       // Verify the critical touch-hover tokens reside INSIDE the fine pointing media query
-      expect(mediaContent).toContain('.touch-hover-slate-700:hover');
-      expect(mediaContent).toContain('.touch-hover-indigo-500:hover');
-      expect(mediaContent).toContain('.touch-hover-amber-400:hover');
-      expect(mediaContent).toContain('.touch-hover-emerald-500:hover');
-      expect(mediaContent).toContain('.touch-hover-text-slate-200:hover');
+      expect(mediaContent).toContain('.touch-hover-sunken:hover');
+      expect(mediaContent).toContain('.touch-hover-main:hover');
+      expect(mediaContent).toContain('.touch-hover-sub:hover');
+      expect(mediaContent).toContain('.touch-hover-danger:hover');
+      expect(mediaContent).toContain('.touch-hover-ink:hover');
     });
   });
 
@@ -671,11 +671,9 @@ describe('Milestone M4 Challenger: Slot Arbitration & Micro-Interaction Stress S
       expect(badge).toBeDefined();
       const badgeContainer = badge.closest('span.inline-flex')!;
       expect(badgeContainer).not.toBeNull();
-      expect(badgeContainer.className).toContain('text-emerald-300');
-
-      // Check ping pulse indicator element inside
-      const pingPulse = badgeContainer.querySelector('.animate-ping');
-      expect(pingPulse).not.toBeNull();
+      // Static status dot, no ping animation
+      expect(badgeContainer.querySelector('.bg-main')).not.toBeNull();
+      expect(badgeContainer.querySelector('.animate-ping')).toBeNull();
     });
   });
 });

@@ -180,18 +180,16 @@ describe('Milestone M2 Iteration 2 Challenger 2: Hover Isolation & Active-Press 
 
       // Verify declared tokens inside media query
       const declaredInside = mediaBlock.match(/\.touch-hover-[a-zA-Z0-9\-_]+/g) || [];
-      expect(declaredInside.length).toBeGreaterThanOrEqual(8);
+      expect(declaredInside.length).toBeGreaterThanOrEqual(6);
 
       // Specific tokens expected by M2 specification
       const expectedTokens = [
-        '.touch-hover-border-slate-600',
-        '.touch-hover-indigo-500',
-        '.touch-hover-amber-400',
-        '.touch-hover-emerald-500',
-        '.touch-hover-rose-900-70',
-        '.touch-hover-text-rose-200',
-        '.touch-hover-slate-800-70',
-        '.touch-hover-text-slate-200',
+        '.touch-hover-sunken',
+        '.touch-hover-line',
+        '.touch-hover-main',
+        '.touch-hover-sub',
+        '.touch-hover-danger',
+        '.touch-hover-ink',
       ];
 
       for (const token of expectedTokens) {
@@ -210,7 +208,7 @@ describe('Milestone M2 Iteration 2 Challenger 2: Hover Isolation & Active-Press 
       const usedInStoreSummary = storeSummarySrc.match(/touch-hover-[a-zA-Z0-9\-_]+/g) || [];
 
       const allUsed = Array.from(new Set([...usedInWaitingCard, ...usedInStoreSummary]));
-      expect(allUsed.length).toBeGreaterThanOrEqual(8);
+      expect(allUsed.length).toBeGreaterThanOrEqual(5);
 
       for (const className of allUsed) {
         const regex = new RegExp(`\\.${className}:hover\\s*\\{`);
@@ -335,27 +333,22 @@ describe('Milestone M2 Iteration 2 Challenger 2: Hover Isolation & Active-Press 
       );
 
       const selectedCard = container.firstElementChild as HTMLElement;
-      // When isSelected is true, -translate-y-0.5 is present
-      expect(selectedCard.className).toContain('-translate-y-0.5');
+      // Selection is shown by border + ring only, so nothing competes with .active-press's transform
+      expect(selectedCard.className).not.toMatch(/translate/);
       expect(selectedCard.className).toContain('active-press');
 
-      // Verify that in Tailwind 4, -translate-y-0.5 uses the modern 'translate' property,
-      // which does not conflict with or overwrite 'transform: scale(0.97)' from .active-press:active.
       const distDir = path.join(rootDir, 'dist/assets');
       if (fs.existsSync(distDir)) {
         const cssFiles = fs.readdirSync(distDir).filter((f) => f.endsWith('.css'));
         if (cssFiles.length > 0) {
           const compiledCss = fs.readFileSync(path.join(distDir, cssFiles[0]), 'utf-8');
-          // In Tailwind v4, translate-y utilities map to 'translate:', not 'transform:'
-          expect(compiledCss).toMatch(/\.-translate-y-0\\\.5\{[^}]*translate:/);
-          // And active-press maps to transform:scale(.97)
           expect(compiledCss).toContain('.active-press:active{transform:scale(.97)}');
         }
       }
     });
 
     it('verifies active:bg-* classes on action buttons do not touch or conflict with transform', () => {
-      const item = createMockItem({ id: 'btn-conflict-test', status: 'ARRIVED' });
+      const item = createMockItem({ id: 'btn-conflict-test', status: 'CALLED' });
       render(
         <WaitingCard
           item={item}
@@ -366,16 +359,16 @@ describe('Milestone M2 Iteration 2 Challenger 2: Hover Isolation & Active-Press 
       );
 
       const seatBtn = screen.getByRole('button', { name: /착석/i });
-      expect(seatBtn.className).toContain('active:bg-emerald-700');
+      expect(seatBtn.className).toContain('active:bg-main-strong');
       expect(seatBtn.className).toContain('active-press');
 
-      // Check compiled CSS to verify active:bg-emerald-700 only alters background-color
+      // Check compiled CSS to verify active:bg-main-strong only alters background-color
       const distDir = path.join(rootDir, 'dist/assets');
       if (fs.existsSync(distDir)) {
         const cssFiles = fs.readdirSync(distDir).filter((f) => f.endsWith('.css'));
         if (cssFiles.length > 0) {
           const compiledCss = fs.readFileSync(path.join(distDir, cssFiles[0]), 'utf-8');
-          const ruleMatch = compiledCss.match(/\.active\\:bg-emerald-700:active\{([^}]+)\}/);
+          const ruleMatch = compiledCss.match(/\.active\\:bg-main-strong:active\{([^}]+)\}/);
           expect(ruleMatch).not.toBeNull();
           if (ruleMatch) {
             expect(ruleMatch[1]).toContain('background-color');

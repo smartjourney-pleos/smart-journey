@@ -5,7 +5,7 @@ import { renderLoggedInApp } from '../test-utils';
 describe('Tier 1 - Feature 14: Evaluator Demo Panel (P-06)', () => {
   it('renders evaluator demo controller heading', async () => {
     await renderLoggedInApp();
-    expect(screen.getByText('심사·시연 데모 컨트롤러')).toBeDefined();
+    expect(screen.getByText('시연 제어 패널')).toBeDefined();
   });
 
   it('renders instructional copy explaining golden time and alighting simulation', async () => {

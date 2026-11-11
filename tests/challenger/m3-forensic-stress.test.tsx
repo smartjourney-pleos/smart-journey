@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { TeamDetailDrawer } from '../../src/components/detail/TeamDetailDrawer';
 import { ConfirmDialog } from '../../src/components/dialogs/ConfirmDialog';
 import type { WaitingTeam } from '../../src/types/pos';
@@ -146,14 +146,14 @@ describe('Milestone M3 Forensic Integrity Stress Suite', () => {
       expect(screen.getByText('센서 이상 알림')).toBeDefined();
 
       // Check vertical connector line
-      const connector = container.querySelector('.bg-slate-800.w-0\\.5');
+      const connector = container.querySelector('.bg-line.w-0\\.5');
       expect(connector).not.toBeNull();
 
       // Check node marker styling for all 4 types
-      expect(container.querySelector('.border-emerald-500')).not.toBeNull();
-      expect(container.querySelector('.border-amber-500')).not.toBeNull();
-      expect(container.querySelector('.border-rose-500')).not.toBeNull();
-      expect(container.querySelector('.border-blue-500')).not.toBeNull();
+      expect(container.querySelector('.border-main')).not.toBeNull();
+      expect(container.querySelector('.border-sub')).not.toBeNull();
+      expect(container.querySelector('.border-danger')).not.toBeNull();
+      expect(container.querySelector('.border-ink-2')).not.toBeNull();
     });
 
     it('enforces strict touch target sizing (>= 48px) and .active-press on all interactive controls', () => {
@@ -332,7 +332,7 @@ describe('Milestone M3 Forensic Integrity Stress Suite', () => {
       const detailDrawer = screen.getByText('대기 상세 정보').closest('aside');
       expect(detailDrawer).not.toBeNull();
 
-      const seatBtnInDrawer = detailDrawer!.querySelector('button.bg-emerald-600') as HTMLButtonElement;
+      const seatBtnInDrawer = within(detailDrawer as HTMLElement).getByRole('button', { name: /착석/ }) as HTMLButtonElement;
       expect(seatBtnInDrawer).not.toBeNull();
       fireEvent.click(seatBtnInDrawer);
 

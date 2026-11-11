@@ -30,7 +30,8 @@ describe('Tier 1 - Feature 12: Tablet Safe Confirmation Dialogs', () => {
     expect(screen.getByText('매장 대기 시간 설정')).toBeDefined();
     const backdrop = container.querySelector('.fixed.inset-0');
     expect(backdrop).not.toBeNull();
-    expect(backdrop?.className).toContain('backdrop-blur');
+    expect(backdrop?.className).toContain('bg-ink/50');
+    expect(backdrop?.className).not.toContain('backdrop-blur');
   });
 
   it('invokes onClose when cancel button is clicked without saving', () => {
@@ -61,7 +62,7 @@ describe('Tier 1 - Feature 12: Tablet Safe Confirmation Dialogs', () => {
         onSave={() => {}}
       />
     );
-    const closeBtn = container.querySelector('button.text-slate-400');
+    const closeBtn = container.querySelector('button.text-ink-2');
     expect(closeBtn).not.toBeNull();
     fireEvent.click(closeBtn!);
     expect(onClose).toHaveBeenCalledTimes(1);

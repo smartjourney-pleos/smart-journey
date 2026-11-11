@@ -140,7 +140,7 @@ describe('M1 Challenger Empirical Stress Tests', () => {
       // EMPIRICAL ANALYSIS: Check presence of CSS truncation protections
       const h1Class = h1?.className || '';
       const parentClass = h1?.parentElement?.className || '';
-      const rightContainer = container.querySelector('.flex.items-center.space-x-4');
+      const rightContainer = container.querySelector('.flex.items-center.gap-5');
 
       const h1HasTruncate = h1Class.includes('truncate');
       const h1HasMaxW = /max-w-/.test(h1Class);
@@ -297,8 +297,8 @@ describe('M1 Challenger Empirical Stress Tests', () => {
       // Verify clock container has tabular-nums
       const clockElement = container.querySelector('.tabular-nums');
       expect(clockElement).not.toBeNull();
-      expect(clockElement?.className).toContain('font-mono');
-      expect(clockElement?.className).toContain('min-w-[105px]');
+      expect(clockElement?.className).toContain('tabular-nums');
+      expect(clockElement?.className).toContain('min-w-[78px]');
     });
   });
 });
