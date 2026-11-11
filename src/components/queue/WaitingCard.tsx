@@ -22,21 +22,21 @@ export const WaitingCard: React.FC<WaitingCardProps> = ({
 }) => {
   const isVehicle = item.channel === 'VEHICLE';
 
-  const badge = 'inline-flex items-center gap-1 text-xs px-2 py-1 rounded-sm font-semibold';
+  const badge = 'inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-sm font-semibold';
 
   const renderStatusBadge = () => {
     if (item.status === 'CALLED') {
       return (
-        <span className={`${badge} bg-sub-tint text-ink`}>
-          <Bell className="w-3.5 h-3.5" /> 호출됨
+        <span className={`${badge} bg-sub-tint text-ink border border-sub/30`}>
+          <Bell className="w-3.5 h-3.5 text-sub" /> 호출됨
         </span>
       );
     }
 
     if (item.status === 'ARRIVED') {
       return (
-        <span className={`${badge} bg-main-tint text-main`}>
-          <CheckCircle2 className="w-3.5 h-3.5" /> 현장 도착
+        <span className={`${badge} bg-main-tint text-main border border-main/30`}>
+          <CheckCircle2 className="w-3.5 h-3.5 text-main" /> 현장 도착
         </span>
       );
     }
@@ -44,7 +44,7 @@ export const WaitingCard: React.FC<WaitingCardProps> = ({
     return <span className={`${badge} bg-sunken text-ink-2`}>이동 중</span>;
   };
 
-  // 하차 결과 배지 (명세서 7절 규약)
+  // 하차 결과 배지 (Pleos Connect 센서 텔레메트리 규약)
   const renderArrivalBadge = () => {
     const isConfirmed =
       item.arrivalResult === 'CONFIRMED' ||
@@ -58,7 +58,7 @@ export const WaitingCard: React.FC<WaitingCardProps> = ({
       const count = item.alighted ?? item.alighting?.alightedCount ?? item.partySize;
       const total = item.alighting?.totalPassengers ?? item.partySize;
       return (
-        <div className={`${badge} bg-main-tint text-main`}>
+        <div className={`${badge} bg-main-tint text-main border border-main/30`}>
           <CheckCircle2 className="w-3.5 h-3.5" />
           <span>
             {count}/{total}명 하차 완료
@@ -72,7 +72,7 @@ export const WaitingCard: React.FC<WaitingCardProps> = ({
     }
 
     if (isUnconfirmed) {
-      return <div className={`${badge} bg-sub-tint text-ink`}>인원 미확인</div>;
+      return <div className={`${badge} bg-sub-tint text-ink border border-sub/30`}>인원 미확인</div>;
     }
 
     return null;
@@ -103,20 +103,22 @@ export const WaitingCard: React.FC<WaitingCardProps> = ({
         ${isSelected ? 'border-main ring-2 ring-main' : 'border-line touch-hover-line'}
       `}
     >
+      {/* Pleos Status Indicator Stripe */}
       <span className={`absolute left-0 inset-y-0 w-1.5 ${stripe}`} aria-hidden="true" />
 
+      {/* Header: Ticket Number & Channel */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="flex items-baseline gap-1 shrink-0">
-            <span className="text-sm text-ink-2">No.</span>
-            <span className="text-3xl font-bold text-ink leading-none tabular-nums">
+            <span className="text-sm font-semibold text-ink-2">No.</span>
+            <span className="text-3xl font-extrabold text-ink leading-none tabular-nums tracking-tight">
               {item.ticketNo}
             </span>
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               {isVehicle ? (
-                <span className="inline-flex items-center gap-1 text-sm font-semibold text-main">
+                <span className="inline-flex items-center gap-1 text-sm font-bold text-main">
                   <Car className="w-4 h-4" /> 차량 인증
                 </span>
               ) : (
@@ -133,14 +135,15 @@ export const WaitingCard: React.FC<WaitingCardProps> = ({
         </div>
 
         <div className="text-right shrink-0">
-          <span className="text-xs text-ink-2">대기 순서</span>
-          <p className="text-lg font-bold text-ink">
+          <span className="text-xs font-medium text-ink-2">대기 순서</span>
+          <p className="text-lg font-extrabold text-ink">
             {item.position === 1 ? '다음 입장' : `${item.position}번째`}
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 py-3 border-y border-line mb-4">
+      {/* Metrics: Party Size & ETA */}
+      <div className="grid grid-cols-2 gap-3 py-3 border-y border-line mb-4 bg-sunken/30 -mx-5 px-5">
         <div className="flex items-baseline gap-2">
           <span className="text-sm text-ink-2">인원:</span>
           <span className="text-base font-bold text-ink tabular-nums">{item.partySize}명</span>
@@ -153,22 +156,25 @@ export const WaitingCard: React.FC<WaitingCardProps> = ({
         </div>
       </div>
 
+      {/* Customer & Vehicle Metadata */}
       {(item.customerName || item.phone || (isVehicle && item.vehicleModel)) && (
         <div className="mb-3 text-sm text-ink-2 flex flex-wrap items-center gap-x-3 gap-y-0.5">
-          {item.customerName && <span className="text-ink font-medium">{item.customerName}</span>}
-          {item.phone && <span className="tabular-nums">{item.phone}</span>}
+          {item.customerName && <span className="text-ink font-semibold">{item.customerName}</span>}
+          {item.phone && <span className="tabular-nums font-medium">{item.phone}</span>}
           {isVehicle && item.vehicleModel && (
-            <span>
+            <span className="text-xs font-semibold px-2 py-0.5 rounded bg-sunken text-ink">
               {item.vehicleModel} {item.vehicleNumber ? `· ${item.vehicleNumber}` : ''}
             </span>
           )}
         </div>
       )}
 
+      {/* Alighting Telemetry */}
       {isVehicle && (item.arrivalResult || item.alighting) && (
         <div className="mb-4">{renderArrivalBadge()}</div>
       )}
 
+      {/* 48px Tactile Action Buttons (Pleos Action Row) */}
       <div className="grid grid-cols-3 gap-2">
         <button
           type="button"

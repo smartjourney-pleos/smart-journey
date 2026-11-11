@@ -5,32 +5,80 @@
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 
-  /* 바탕: 차가운 회백 위에 흰 면 */
-  --color-ground: #f1f2ef;
+  /* Pleos Connect Design System Foundations - Light (Default) */
+  /* Background: basic_50 (#F7F8FA) canvas */
+  --color-ground: #f7f8fa;
+  /* Surface: basic_00 (#FFFFFF) cards & panels */
   --color-surface: #ffffff;
-  --color-sunken: #e6e8e4;
-  --color-line: #d3d7d1;
-  --color-ink: #232624;
-  --color-ink-2: #565c57;
+  /* Sunken: basic_100 (#EDEEF2) sunken containers & secondary tabs */
+  --color-sunken: #edeef2;
+  /* Line: basic_200 (#E0E1E6) crisp 1px borders & dividers */
+  --color-line: #e0e1e6;
+  /* Ink: basic_900 (#131417) high-contrast primary text */
+  --color-ink: #131417;
+  /* Ink 2: basic_500 (#686A72) secondary & muted text */
+  --color-ink-2: #686a72;
 
-  /* 메인: 고속도로 표지판 그린 */
-  --color-main: #00694b;
-  --color-main-strong: #00553c;
-  --color-main-tint: #dceee5;
+  /* Main: Pleos Connected Informative Primary (Blue #0064FF / Electric Mobility) */
+  --color-main: #0064ff;
+  --color-main-strong: #0050d4;
+  --color-main-tint: #ebf3ff;
 
-  /* 보조: 도로 중앙선 옐로 */
-  --color-sub: #f2b100;
-  --color-sub-strong: #d99b00;
-  --color-sub-tint: #fbeec2;
+  /* Sub: Pleos Connected Warning & Highway Yellow (#FF8A00) */
+  --color-sub: #ff8a00;
+  --color-sub-strong: #d97706;
+  --color-sub-tint: #fff7ed;
 
-  /* 경고: 브레이크등 레드 (노쇼·종료 전용) */
-  --color-danger: #b63829;
-  --color-danger-strong: #9a2e21;
-  --color-danger-tint: #f5deda;
+  /* Danger: Pleos Informative Negative Brake Red (#FE3D16) */
+  --color-danger: #fe3d16;
+  --color-danger-strong: #dc2626;
+  --color-danger-tint: #fee2e2;
+
+  /* Pleos Semantic Brand Extensions */
+  --color-pleos-active: #02c265;
+  --color-pleos-active-tint: #e6f9f0;
+  --color-pleos-purple: #5a46fa;
+  --color-pleos-purple-tint: #f0edff;
 }
 
 :root {
-  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
+  font-family: "Asta Sans", "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", sans-serif;
+  color-scheme: light;
+}
+
+/* Pleos In-Car IVI Dark Theme */
+.dark {
+  color-scheme: dark;
+  --color-ground: #131417;
+  --color-surface: #1d1e21;
+  --color-sunken: #25272d;
+  --color-line: #313236;
+  --color-ink: #ffffff;
+  --color-ink-2: #a4a8ae;
+  --color-main: #0082ff;
+  --color-main-strong: #006fe0;
+  --color-main-tint: rgba(0, 130, 255, 0.15);
+  --color-sub: #ffb340;
+  --color-sub-strong: #ffa726;
+  --color-sub-tint: rgba(255, 179, 64, 0.15);
+  --color-danger: #ff4c28;
+  --color-danger-strong: #e03e1b;
+  --color-danger-tint: rgba(255, 76, 40, 0.15);
+  --color-pleos-active: #00e074;
+  --color-pleos-active-tint: rgba(0, 224, 116, 0.15);
+  --color-pleos-purple: #6a57ff;
+  --color-pleos-purple-tint: rgba(106, 87, 255, 0.15);
+}
+
+/* Pleos Elevation Shadows (from Design Guide p21, p45) */
+.shadow-pleos-1 {
+  box-shadow: 0 6px 24px rgba(19, 20, 23, 0.08);
+}
+.shadow-pleos-2 {
+  box-shadow: 0 8px 32px rgba(19, 20, 23, 0.14), 0 2px 2px rgba(19, 20, 23, 0.06);
+}
+.shadow-pleos-3 {
+  box-shadow: 0 20px 40px rgba(19, 20, 23, 0.24), 0 2px 4px rgba(19, 20, 23, 0.18);
 }
 
 /* Tablet & Mobile Native Shell Reset */
@@ -78,7 +126,7 @@ button, [role="button"], .interactive-control, nav, header {
   outline-offset: 2px;
 }
 
-/* Tactile press feedback */
+/* Tactile press feedback (Emil Kowalski / Pleos Action physics) */
 .active-press {
   transition: transform 120ms var(--ease-out);
 }

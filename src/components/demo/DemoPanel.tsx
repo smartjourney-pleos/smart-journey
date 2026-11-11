@@ -7,6 +7,8 @@ import {
   RotateCcw,
   Zap,
   X,
+  SlidersHorizontal,
+  Flame,
 } from 'lucide-react';
 
 export interface DemoPanelProps {
@@ -72,13 +74,17 @@ export const DemoPanel: React.FC<DemoPanelProps> = ({
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: '100%', opacity: 0 }}
       transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
-      className={`w-[360px] w-full shrink-0 h-full flex flex-col bg-surface overflow-hidden select-none border-l border-line z-20 ${className}`}
+      className={`w-[360px] w-full shrink-0 h-full flex flex-col bg-surface overflow-hidden select-none border-l border-line z-20 shadow-pleos-2 ${className}`}
     >
+      {/* Header */}
       <div className="h-16 px-5 border-b border-line flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-main-tint flex items-center justify-center text-main">
+            <SlidersHorizontal className="w-4 h-4" />
+          </div>
           <h2 className="text-base font-bold text-ink truncate">시연 제어 패널</h2>
-          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-2 shrink-0">
-            <span className="h-2 w-2 rounded-full bg-main" aria-hidden="true" />
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-main px-2 py-0.5 rounded-full bg-main-tint border border-main/20 shrink-0">
+            <span className="h-1.5 w-1.5 rounded-full bg-main animate-pulse" aria-hidden="true" />
             <span>실시간 연동</span>
           </span>
         </div>
@@ -95,23 +101,27 @@ export const DemoPanel: React.FC<DemoPanelProps> = ({
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6">
-        <p className="text-sm text-ink-2 leading-relaxed">
-          심사위원 시연 시, 현장 대기 팀을 증감시켜 차량 앱의{' '}
-          <strong className="text-ink font-semibold">골든타임 재계산</strong>과{' '}
-          <strong className="text-ink font-semibold">하차 감지 이벤트</strong>를 연출할 수 있습니다.
-        </p>
+      {/* Control Body */}
+      <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
+        <div className="bg-sunken/40 rounded-xl p-3.5 border border-line">
+          <p className="text-xs text-ink-2 leading-relaxed">
+            심사위원 시연 시, 현장 대기 팀을 증감시켜 차량 앱의{' '}
+            <strong className="text-ink font-semibold">골든타임 재계산</strong>과{' '}
+            <strong className="text-ink font-semibold">하차 감지 이벤트</strong>를 연출할 수 있습니다.
+          </p>
+        </div>
 
-        <section className="space-y-3">
+        {/* Section 1: Walk-in Adjustment */}
+        <section className="bg-surface rounded-xl p-4 border border-line space-y-3 shadow-sm">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-ink">현장 대기 팀 수 조작</h3>
             {(typeof walkInCount === 'number' || typeof aheadTeams === 'number') && (
-              <span className="text-sm font-bold text-main tabular-nums">
+              <span className="text-sm font-bold text-main tabular-nums bg-main-tint px-2 py-0.5 rounded">
                 {typeof walkInCount === 'number' ? `현장 ${walkInCount}팀` : `총 ${aheadTeams}팀`}
               </span>
             )}
           </div>
-          <p className="text-sm text-ink-2 leading-relaxed">
+          <p className="text-xs text-ink-2 leading-relaxed">
             대기 팀이 바뀌면 차량 내비 ETA와 매장 대기시간이 비교되어 차량 화면에 승인 카드가 즉시 팝업됩니다.
           </p>
           <div className="grid grid-cols-2 gap-2.5">
@@ -136,25 +146,33 @@ export const DemoPanel: React.FC<DemoPanelProps> = ({
           </div>
         </section>
 
-        <section className="pt-5 border-t border-line space-y-3">
-          <h3 className="text-sm font-bold text-ink">골든타임 급증 시연 (+3팀)</h3>
-          <p className="text-sm text-ink-2 leading-relaxed">
+        {/* Section 2: Golden Time Surge */}
+        <section className="bg-surface rounded-xl p-4 border border-line space-y-3 shadow-sm">
+          <div className="flex items-center gap-1.5">
+            <Flame className="w-4 h-4 text-sub" />
+            <h3 className="text-sm font-bold text-ink">골든타임 급증 시연 (+3팀)</h3>
+          </div>
+          <p className="text-xs text-ink-2 leading-relaxed">
             심사위원 시연 시 단 한 번의 탭으로 +3팀 급증을 발생시켜 차량 골든타임 재계산(V-07 알림)을 유도합니다.
           </p>
           <button
             type="button"
             onClick={handleGoldenTimeRush}
             aria-label="+3팀 골든타임 시연"
-            className={`${action} bg-sub text-ink touch-hover-sub`}
+            className={`${action} bg-sub text-ink touch-hover-sub font-extrabold shadow-sm`}
           >
-            <Zap className="w-4 h-4" />
+            <Zap className="w-4 h-4 text-ink" />
             <span>+3팀 골든타임 시연</span>
           </button>
         </section>
 
-        <section className="pt-5 border-t border-line space-y-3">
-          <h3 className="text-sm font-bold text-ink">차량 도착 & 하차 시뮬레이션</h3>
-          <p className="text-sm text-ink-2 leading-relaxed">
+        {/* Section 3: Vehicle Arrival & Alighting Simulation */}
+        <section className="bg-surface rounded-xl p-4 border border-line space-y-3 shadow-sm">
+          <div className="flex items-center gap-1.5">
+            <Car className="w-4 h-4 text-main" />
+            <h3 className="text-sm font-bold text-ink">차량 도착 & 하차 시뮬레이션</h3>
+          </div>
+          <p className="text-xs text-ink-2 leading-relaxed">
             도착 이벤트, 정차, 도어 열림, 좌석 센서를 종합하여 POS에 하차 완료 배지를 띄웁니다.
           </p>
           <button
@@ -163,20 +181,21 @@ export const DemoPanel: React.FC<DemoPanelProps> = ({
             aria-label="하차 확인 이벤트 발생"
             className={`${action} bg-surface border border-line text-ink touch-hover-sunken`}
           >
-            <Car className="w-4 h-4" />
+            <Car className="w-4 h-4 text-main" />
             <span>하차 확인 이벤트 발생</span>
           </button>
         </section>
       </div>
 
-      <div className="p-4 border-t border-line shrink-0 mt-auto">
+      {/* Footer Reset */}
+      <div className="p-4 border-t border-line shrink-0 mt-auto bg-sunken/30">
         <button
           type="button"
           onClick={onResetDemo}
           aria-label="시연 초기 상태로 리셋 (기본 상태 복원)"
-          className={`${action} bg-sunken text-ink touch-hover-line font-medium`}
+          className={`${action} bg-sunken text-ink touch-hover-line font-medium border border-line/80`}
         >
-          <RotateCcw className="w-4 h-4" />
+          <RotateCcw className="w-4 h-4 text-ink-2" />
           <span>시연 초기 상태로 리셋 (기본 상태 복원)</span>
         </button>
       </div>

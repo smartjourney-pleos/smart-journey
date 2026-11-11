@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X } from 'lucide-react';
+import { X, AlertTriangle, CheckCircle2, ShieldAlert } from 'lucide-react';
 
 export type ConfirmActionType =
   | 'SEAT'
@@ -132,10 +132,20 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ type: 'spring', damping: 25, stiffness: 350, duration: 0.2 }}
           onClick={(e) => e.stopPropagation()}
-          className={`bg-surface rounded-lg shadow-xl max-w-md w-full overflow-hidden text-ink ${className}`}
+          className={`bg-surface rounded-lg shadow-xl shadow-pleos-3 max-w-md w-full overflow-hidden text-ink border border-line ${className}`}
         >
+          {/* Pleos System Popup Header */}
           <div className="px-6 py-4 border-b border-line flex items-center justify-between">
-            <h3 className="text-lg font-bold text-ink">{modalTitle}</h3>
+            <div className="flex items-center gap-2.5">
+              {isSeat ? (
+                <CheckCircle2 className="w-5 h-5 text-main" />
+              ) : isNoShow ? (
+                <ShieldAlert className="w-5 h-5 text-danger" />
+              ) : (
+                <AlertTriangle className="w-5 h-5 text-sub" />
+              )}
+              <h3 className="text-lg font-bold text-ink">{modalTitle}</h3>
+            </div>
 
             <button
               type="button"
@@ -147,9 +157,10 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             </button>
           </div>
 
+          {/* Pleos Popup Body */}
           <div className="p-6 space-y-4">
             {(ticketNo !== undefined || partySize !== undefined) && (
-              <div className="bg-sunken rounded-md px-4 py-3 flex items-center justify-between">
+              <div className="bg-sunken rounded-md px-4 py-3 flex items-center justify-between border border-line/60">
                 {ticketNo !== undefined && (
                   <span className="text-base font-bold text-ink tabular-nums">
                     No. {ticketNo}
@@ -163,12 +174,14 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
               </div>
             )}
 
-            <p className="text-base text-ink leading-relaxed">{modalDescription}</p>
+            <p className="text-base text-ink leading-relaxed font-medium">{modalDescription}</p>
 
             {consequenceText && (
               <p
-                className={`px-4 py-3 rounded-md text-sm leading-relaxed ${
-                  isSeat ? 'bg-main-tint text-main' : 'bg-danger-tint text-danger'
+                className={`px-4 py-3 rounded-md text-sm leading-relaxed border ${
+                  isSeat
+                    ? 'bg-main-tint text-main border-main/20'
+                    : 'bg-danger-tint text-danger border-danger/20 font-medium'
                 }`}
               >
                 {consequenceText}
@@ -176,7 +189,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             )}
           </div>
 
-          <div className="px-6 py-4 border-t border-line flex items-center justify-end gap-3">
+          {/* Pleos Popup Action Row (Horizontal Align) */}
+          <div className="px-6 py-4 border-t border-line flex items-center justify-end gap-3 bg-sunken/20">
             <button
               type="button"
               onClick={onCancel}
@@ -188,7 +202,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             <button
               type="button"
               onClick={onConfirm}
-              className={`min-h-[48px] h-12 px-5 rounded-md font-bold text-sm flex items-center justify-center cursor-pointer select-none touch-manipulation transition-colors duration-150 ease-out active-press ${confirmBtnStyles}`}
+              className={`min-h-[48px] h-12 px-5 rounded-md font-bold text-sm flex items-center justify-center cursor-pointer select-none touch-manipulation transition-colors duration-150 ease-out active-press shadow-sm ${confirmBtnStyles}`}
             >
               {finalConfirmLabel}
             </button>
