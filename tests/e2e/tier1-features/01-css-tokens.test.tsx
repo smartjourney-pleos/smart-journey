@@ -10,10 +10,10 @@ describe('Tier 1 - Feature 01: Tablet CSS Foundation & Tokens', () => {
     expect(root.className).toMatch(/h-screen|100dvh|min-h-screen/);
   });
 
-  it('applies dark theme background palette to tablet workspace', async () => {
+  it('applies ground background token to tablet workspace', async () => {
     const { container } = await renderLoggedInApp();
     const root = container.firstElementChild as HTMLElement;
-    expect(root.className).toMatch(/bg-slate-950|bg-slate-900/);
+    expect(root.className).toContain('bg-ground');
   });
 
   it('constrains horizontal and vertical overflow to prevent tablet page bouncing', async () => {
@@ -25,7 +25,7 @@ describe('Tier 1 - Feature 01: Tablet CSS Foundation & Tokens', () => {
   it('uses monospaced or tabular font numerals for jitter-free counters', async () => {
     await renderLoggedInApp();
     // Clock and ticket numbers should apply monospace or tabular numerals
-    const monoElements = document.querySelectorAll('.font-mono, [style*="tabular-nums"]');
+    const monoElements = document.querySelectorAll('.tabular-nums, [style*="tabular-nums"]');
     expect(monoElements.length).toBeGreaterThan(0);
   });
 

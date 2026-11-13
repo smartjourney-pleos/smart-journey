@@ -404,7 +404,7 @@ describe('Tier 5 Adversarial Hardening Suite (Milestone M5)', () => {
         />
       );
 
-      const modalContent = container.querySelector('.bg-slate-900.border') as HTMLElement;
+      const modalContent = container.querySelector('.bg-surface.shadow-xl') as HTMLElement;
       expect(modalContent).not.toBeNull();
 
       fireEvent.click(modalContent);
@@ -688,9 +688,9 @@ describe('Tier 5 Adversarial Hardening Suite (Milestone M5)', () => {
       const callBtns = screen.getAllByRole('button', { name: /^호출$/i });
       fireEvent.click(callBtns[0]);
 
-      // Call button immediately shifts to "재호출" with amber styling
+      // Call button immediately shifts to "재호출" with sub-tint styling
       const reCallBtn = screen.getByRole('button', { name: /^재호출$/i });
-      expect(reCallBtn.className).toContain('bg-amber-500');
+      expect(reCallBtn.className).toContain('bg-surface');
 
       // Click re-call 10 times consecutively
       for (let i = 0; i < 10; i++) {

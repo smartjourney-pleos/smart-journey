@@ -3,7 +3,6 @@ import { motion } from 'motion/react';
 import {
   X,
   Car,
-  Users,
   Phone,
   Clock,
   MapPin,
@@ -19,7 +18,6 @@ import type {
   WaitingItem,
   TimelineEvent,
   QueueStatus,
-  QueueChannel,
   AlightingStatus,
   AlightingTelemetry,
 } from '../../types/pos';
@@ -33,9 +31,9 @@ export interface TeamDetailDrawerProps {
   className?: string;
 }
 
-// 헬퍼: 전화번호 마스킹 (010-****-1234)
+// 헬퍼: 전화번호 마스킹 (010-****-1234). 번호가 없으면 빈 문자열
 function maskPhone(phone?: string): string {
-  if (!phone) return '010-****-1234';
+  if (!phone) return '';
   if (phone.includes('*')) return phone;
   const clean = phone.replace(/\D/g, '');
   if (clean.length === 11) {
@@ -47,10 +45,9 @@ function maskPhone(phone?: string): string {
   return phone;
 }
 
-// 헬퍼: 고객명 기본값
-function getCustomerName(name?: string, channel: QueueChannel = 'VEHICLE'): string {
-  if (name) return name;
-  return channel === 'VEHICLE' ? '김*수 (Pleos Connect)' : '이*민 (현장 접수)';
+// 헬퍼: 고객명이 없으면 지어내지 않고 미등록으로 표시
+function getCustomerName(name?: string): string {
+  return name || '이름 미등록';
 }
 
 export const TeamDetailDrawer: React.FC<TeamDetailDrawerProps> = ({
@@ -73,25 +70,21 @@ export const TeamDetailDrawer: React.FC<TeamDetailDrawerProps> = ({
     'etaMinutes' in selectedTeam
       ? selectedTeam.etaMinutes
       : selectedTeam.etaMin;
-  const customerName = getCustomerName(
-    selectedTeam.customerName,
-    selectedTeam.channel
-  );
+  const customerName = getCustomerName(selectedTeam.customerName);
   const phone = maskPhone(selectedTeam.phone);
   const partySize = selectedTeam.partySize;
   const status: QueueStatus = selectedTeam.status;
   const position = 'position' in selectedTeam ? selectedTeam.position : 1;
 
   // 차량 및 텔레메트리 정보
-  const vehicleModel =
-    selectedTeam.vehicleModel || (isVehicle ? 'Genesis GV70' : undefined);
-  const vehicleNumber =
-    selectedTeam.vehicleNumber || (isVehicle ? '123가 4567' : undefined);
+  const vehicleLabel = [selectedTeam.vehicleModel, selectedTeam.vehicleNumber]
+    .filter(Boolean)
+    .join(' · ');
   const distance =
     'distanceMeters' in selectedTeam &&
     typeof selectedTeam.distanceMeters === 'number'
       ? `${(selectedTeam.distanceMeters / 1000).toFixed(1)} km`
-      : '2.4 km';
+      : '-';
 
   // 하차 텔레메트리 정규화
   const rawArrivalResult =
@@ -129,9 +122,9 @@ export const TeamDetailDrawer: React.FC<TeamDetailDrawerProps> = ({
   if (selectedTeam.timeline && selectedTeam.timeline.length > 0) {
     timeline = selectedTeam.timeline;
   } else {
-    // 기본 시계열 합성
+    // 기록된 시각만 쓴다. 시각을 모르는 단계는 시각 없이 표시
     const events: TimelineEvent[] = [];
-    const regTime = selectedTeam.registeredAt || '12:00:00';
+    const regTime = selectedTeam.registeredAt || '';
 
     events.push({
       id: 'evt-reg',
@@ -143,22 +136,10 @@ export const TeamDetailDrawer: React.FC<TeamDetailDrawerProps> = ({
       type: 'INFO',
     });
 
-    if (isVehicle) {
-      events.push({
-        id: 'evt-eta',
-        timestamp: '12:05:00',
-        title: 'ETA 실시간 갱신',
-        description: `실시간 교통 데이터 반영: 도착 예정 ${
-          etaMin > 0 ? `${etaMin}분` : '도착 완료'
-        }`,
-        type: 'INFO',
-      });
-    }
-
     if (status === 'ARRIVED' || status === 'CALLED' || status === 'SEATED') {
       events.push({
         id: 'evt-arr',
-        timestamp: '12:12:30',
+        timestamp: '',
         title: '차량 현장 도착 감지',
         description: '매장 주차 구역 진입 확인 (정차 및 P단 전환 감지)',
         type: 'SUCCESS',
@@ -167,7 +148,7 @@ export const TeamDetailDrawer: React.FC<TeamDetailDrawerProps> = ({
       if (isVehicle) {
         events.push({
           id: 'evt-alight',
-          timestamp: '12:13:15',
+          timestamp: '',
           title: '승차 인원 하차 센서 확인',
           description: `좌석 및 도어 센서 감지: ${alighting.alightedCount}/${alighting.totalPassengers}명 하차 완료`,
           type: alighting.status === 'CONFIRMED' ? 'SUCCESS' : 'WARNING',
@@ -178,7 +159,7 @@ export const TeamDetailDrawer: React.FC<TeamDetailDrawerProps> = ({
     if (status === 'CALLED' || status === 'SEATED') {
       events.push({
         id: 'evt-call',
-        timestamp: selectedTeam.calledAt || '12:15:00',
+        timestamp: selectedTeam.calledAt || '',
         title: '매장 점주 고객 호출',
         description: '입장 안내 카카오 알림톡 및 차량 디스플레이 호출 카드 전송',
         type: 'INFO',
@@ -188,7 +169,7 @@ export const TeamDetailDrawer: React.FC<TeamDetailDrawerProps> = ({
     if (status === 'SEATED') {
       events.push({
         id: 'evt-seat',
-        timestamp: selectedTeam.seatedAt || '12:18:00',
+        timestamp: selectedTeam.seatedAt || '',
         title: '테이블 착석 완료',
         description: '매장 입장 확인 및 지정 테이블 안내 완료',
         type: 'SUCCESS',
@@ -198,42 +179,55 @@ export const TeamDetailDrawer: React.FC<TeamDetailDrawerProps> = ({
     timeline = events;
   }
 
-  // 상태 배지 렌더링
+  const badge = 'inline-flex items-center gap-1 text-xs px-2 py-1 rounded-sm font-semibold';
+
   const renderStatusBadge = () => {
     if (status === 'CALLED') {
       return (
-        <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs px-2.5 py-1 rounded-md font-bold animate-pulse flex items-center gap-1">
+        <span className={`${badge} bg-sub-tint text-ink`}>
           <Bell className="w-3.5 h-3.5" /> 호출됨
         </span>
       );
     }
     if (status === 'ARRIVED') {
       return (
-        <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs px-2.5 py-1 rounded-md font-bold flex items-center gap-1">
+        <span className={`${badge} bg-main-tint text-main`}>
           <CheckCircle2 className="w-3.5 h-3.5" /> 현장 도착
         </span>
       );
     }
     if (status === 'SEATED') {
       return (
-        <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs px-2.5 py-1 rounded-md font-bold flex items-center gap-1">
+        <span className={`${badge} bg-main-tint text-main`}>
           <CheckCircle2 className="w-3.5 h-3.5" /> 착석 완료
         </span>
       );
     }
     if (status === 'NO_SHOW') {
       return (
-        <span className="bg-rose-500/20 text-rose-300 border border-rose-500/40 text-xs px-2.5 py-1 rounded-md font-bold flex items-center gap-1">
+        <span className={`${badge} bg-danger-tint text-danger`}>
           <UserX className="w-3.5 h-3.5" /> 노쇼
         </span>
       );
     }
-    return (
-      <span className="bg-blue-500/20 text-blue-300 border border-blue-500/40 text-xs px-2.5 py-1 rounded-md font-semibold">
-        이동 중
-      </span>
-    );
+    return <span className={`${badge} bg-sunken text-ink-2`}>이동 중</span>;
   };
+
+  const markerTone = (type: TimelineEvent['type']) =>
+    type === 'SUCCESS'
+      ? { ring: 'border-main', dot: 'bg-main' }
+      : type === 'WARNING'
+      ? { ring: 'border-sub', dot: 'bg-sub' }
+      : type === 'ALERT'
+      ? { ring: 'border-danger', dot: 'bg-danger' }
+      : { ring: 'border-ink-2', dot: 'bg-ink-2' };
+
+  const isCalled = status === 'CALLED';
+  const primary = 'bg-main touch-hover-main active:bg-main-strong text-white';
+  const secondary = 'bg-surface border border-line text-ink touch-hover-sunken';
+
+  const action =
+    'min-h-[48px] h-12 px-3 rounded-md font-bold text-sm flex items-center justify-center gap-1.5 cursor-pointer select-none touch-manipulation transition-colors duration-150 ease-out active-press';
 
   return (
     <motion.aside
@@ -241,228 +235,167 @@ export const TeamDetailDrawer: React.FC<TeamDetailDrawerProps> = ({
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: '100%', opacity: 0 }}
       transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
-      className={`w-[360px] w-full shrink-0 h-full flex flex-col bg-[#0f172a]/95 backdrop-blur-md overflow-hidden select-none border-l border-slate-800/80 shadow-xl z-20 ${className}`}
+      className={`w-[360px] w-full shrink-0 h-full flex flex-col bg-surface overflow-hidden select-none border-l border-line z-20 ${className}`}
     >
-      {/* 1. 상단 고정 헤더 (64px) */}
-      <div className="h-16 px-5 border-b border-slate-800/80 flex items-center justify-between shrink-0 bg-slate-900/60">
+      <div className="h-16 px-5 border-b border-line flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5">
-          <h2 className="text-sm font-bold text-white tracking-tight">
-            대기 상세 정보
-          </h2>
+          <h2 className="text-base font-bold text-ink">대기 상세 정보</h2>
           {isVehicle ? (
-            <span className="inline-flex items-center gap-1 bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 text-[11px] px-2 py-0.5 rounded-md font-semibold">
-              <Car className="w-3.5 h-3.5 text-cyan-400" /> 차량 인증
+            <span className="inline-flex items-center gap-1 text-sm font-semibold text-main">
+              <Car className="w-4 h-4" /> 차량 인증
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 bg-slate-800 text-slate-300 border border-slate-700 text-[11px] px-2 py-0.5 rounded-md font-semibold">
-              <User className="w-3.5 h-3.5" /> 일반 현장
+            <span className="inline-flex items-center gap-1 text-sm font-semibold text-ink-2">
+              <User className="w-4 h-4" /> 일반 현장
             </span>
           )}
           {renderStatusBadge()}
         </div>
 
-        {/* 닫기 버튼 (최소 48px 터치 타깃 준수) */}
         <button
           type="button"
           onClick={onClose}
           aria-label="상세 닫기"
-          className="w-12 h-12 min-h-[48px] min-w-[48px] rounded-xl flex items-center justify-center text-slate-400 touch-hover-slate-700 touch-hover-text-slate-200 active-press cursor-pointer border border-transparent touch-hover-border-slate-700 transition-colors"
+          className="w-12 h-12 min-h-[48px] min-w-[48px] rounded-md flex items-center justify-center text-ink-2 touch-hover-sunken touch-hover-ink active-press cursor-pointer transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
       </div>
 
-      {/* 2. 스크롤 가능한 본문 영역 */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-4">
-        {/* 고객 프로필 & 대기 번호 카드 */}
-        <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 shadow-sm">
+      <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6">
+        <section>
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
-              {/* 대형 모노스페이스 대기 번호표 */}
-              <div className="w-14 h-14 rounded-2xl bg-slate-950 border border-slate-700/80 flex flex-col items-center justify-center font-bold shrink-0 shadow-inner">
-                <span className="text-[10px] text-slate-400 uppercase tracking-wider font-mono font-bold">
-                  No.
-                </span>
-                <span className="text-2xl text-white font-mono leading-none tabular-nums font-extrabold">
+              <div className="flex items-baseline gap-1 shrink-0">
+                <span className="text-sm text-ink-2">No.</span>
+                <span className="text-4xl text-ink leading-none tabular-nums font-bold">
                   {ticketNo}
                 </span>
               </div>
               <div>
-                <h3 className="text-base font-bold text-white tracking-tight">
-                  {customerName}
-                </h3>
-                <div className="flex items-center gap-2 mt-1 text-xs text-slate-400 font-mono tabular-nums">
-                  <Phone className="w-3 h-3 text-slate-500" />
-                  <span>{phone}</span>
-                </div>
+                <h3 className="text-base font-bold text-ink">{customerName}</h3>
+                {phone && (
+                  <div className="flex items-center gap-1.5 mt-1 text-sm text-ink-2 tabular-nums">
+                    <Phone className="w-3.5 h-3.5" />
+                    <span>{phone}</span>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* 순서 및 상태 */}
             <div className="text-right">
-              <span className="text-[11px] text-slate-400 block">대기 순서</span>
-              <span className="text-sm font-bold text-slate-200">
+              <span className="text-xs text-ink-2 block">대기 순서</span>
+              <span className="text-sm font-bold text-ink">
                 {position === 1 ? '다음 입장' : `${position}번째`}
               </span>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-800/80 text-xs">
-            <div className="flex items-center gap-1.5 text-slate-300">
-              <Users className="w-3.5 h-3.5 text-indigo-400" />
-              <span>탑승 인원:</span>
-              <span className="font-bold text-white font-mono">{partySize}명</span>
+          <dl className="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-line text-sm">
+            <div className="flex items-baseline gap-2">
+              <dt className="text-ink-2">탑승 인원:</dt>
+              <dd className="font-bold text-ink tabular-nums">{partySize}명</dd>
             </div>
-            <div className="flex items-center gap-1.5 text-slate-300">
-              <Clock className="w-3.5 h-3.5 text-amber-400" />
-              <span>접수 시각:</span>
-              <span className="font-bold text-white font-mono">
-                {selectedTeam.registeredAt}
-              </span>
+            <div className="flex items-baseline gap-2">
+              <dt className="text-ink-2">접수 시각:</dt>
+              <dd className="font-bold text-ink tabular-nums">{selectedTeam.registeredAt}</dd>
             </div>
-          </div>
-        </div>
+          </dl>
+        </section>
 
-        {/* 차량 텔레메트리 (차량 인증 예약인 경우) */}
         {isVehicle ? (
-          <div className="bg-slate-900/60 border border-slate-800/90 rounded-2xl p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-cyan-400">
-                <Car className="w-4 h-4" />
-                <span>차량 및 주행 텔레메트리</span>
-              </div>
-              <span className="text-[11px] text-slate-400 font-mono bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/60">
-                {vehicleModel} · {vehicleNumber}
-              </span>
+          <section className="pt-5 border-t border-line space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <h4 className="text-sm font-bold text-ink">차량 및 주행 텔레메트리</h4>
+              {vehicleLabel && <span className="text-xs text-ink-2">{vehicleLabel}</span>}
             </div>
 
-            {/* 주행 상태 지표 */}
-            <div className="grid grid-cols-2 gap-2.5">
-              <div className="bg-slate-950/60 border border-slate-800/70 rounded-xl p-2.5">
-                <span className="text-[10px] text-slate-400 block mb-0.5">
-                  매장까지 거리
-                </span>
-                <div className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-slate-500" />
-                  <span className="text-sm font-bold text-white font-mono tabular-nums">
-                    {distance}
-                  </span>
-                </div>
+            <dl className="grid grid-cols-2 gap-3">
+              <div className="bg-sunken rounded-md p-3">
+                <dt className="text-xs text-ink-2 mb-0.5">매장까지 거리</dt>
+                <dd className="flex items-center gap-1 text-sm font-bold text-ink tabular-nums">
+                  <MapPin className="w-3.5 h-3.5 text-ink-2" />
+                  {distance}
+                </dd>
               </div>
-              <div className="bg-slate-950/60 border border-slate-800/70 rounded-xl p-2.5">
-                <span className="text-[10px] text-slate-400 block mb-0.5">
-                  도착 예상 시간
-                </span>
-                <div className="flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-sm font-bold text-white font-mono tabular-nums">
-                    {etaMin <= 0 ? '도착 완료' : `약 ${etaMin}분`}
-                  </span>
-                </div>
+              <div className="bg-sunken rounded-md p-3">
+                <dt className="text-xs text-ink-2 mb-0.5">도착 예상 시간</dt>
+                <dd className="flex items-center gap-1 text-sm font-bold text-ink tabular-nums">
+                  <Clock className="w-3.5 h-3.5 text-ink-2" />
+                  {etaMin <= 0 ? '도착 완료' : `약 ${etaMin}분`}
+                </dd>
               </div>
-            </div>
+            </dl>
 
-            {/* 하차 센서 텔레메트리 배지 & 체크리스트 */}
-            <div className="pt-2 border-t border-slate-800/70">
-              <span className="text-[11px] text-slate-400 block mb-2">
-                하차 확인 센서 상태
-              </span>
+            <div>
+              <span className="text-xs text-ink-2 block mb-2">하차 확인 센서 상태</span>
               {isConfirmed ? (
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 px-3 py-1.5 rounded-xl text-xs font-bold">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  <div className={`${badge} bg-main-tint text-main`}>
+                    <CheckCircle2 className="w-3.5 h-3.5" />
                     <span>
                       {alighting.alightedCount}/{alighting.totalPassengers}명 하차 완료
                     </span>
                   </div>
-                  <div className="text-[11px] text-slate-400 space-y-1 pl-1">
-                    <div className="flex items-center gap-1 text-emerald-400">
-                      <CheckCircle2 className="w-3 h-3" /> 매장 주차 구역 도착 확인 (GPS)
-                    </div>
-                    <div className="flex items-center gap-1 text-emerald-400">
-                      <CheckCircle2 className="w-3 h-3" /> 차량 정차 및 도어 개폐 센서 감지
-                    </div>
-                    <div className="flex items-center gap-1 text-emerald-400">
-                      <CheckCircle2 className="w-3 h-3" /> 승차 인원 전원 하차 확인
-                    </div>
-                  </div>
+                  <ul className="text-xs text-ink-2 space-y-1">
+                    <li className="flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-main" /> 매장 주차 구역 도착 확인 (GPS)
+                    </li>
+                    <li className="flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-main" /> 차량 정차 및 도어 개폐 센서 감지
+                    </li>
+                    <li className="flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-main" /> 승차 인원 전원 하차 확인
+                    </li>
+                  </ul>
                 </div>
               ) : isManual ? (
-                <div className="flex items-center gap-2 bg-slate-800 text-slate-300 border border-slate-600 px-3 py-2 rounded-xl text-xs font-semibold">
-                  <ShieldCheck className="w-4 h-4 text-slate-400" />
+                <div className={`${badge} bg-sunken text-ink-2`}>
+                  <ShieldCheck className="w-4 h-4" />
                   <span>고객 직접 확인 필요 (수동 보고)</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 bg-amber-950/60 text-amber-300 border border-amber-500/30 px-3 py-2 rounded-xl text-xs font-semibold">
-                  <AlertCircle className="w-4 h-4 text-amber-400" />
+                <div className={`${badge} bg-sub-tint text-ink`}>
+                  <AlertCircle className="w-4 h-4" />
                   <span>인원 미확인</span>
                 </div>
               )}
             </div>
-          </div>
+          </section>
         ) : (
-          <div className="bg-slate-900/60 border border-slate-800/90 rounded-2xl p-4 flex items-center gap-3 text-slate-400 text-xs">
-            <User className="w-5 h-5 text-slate-500 shrink-0" />
+          <section className="pt-5 border-t border-line flex items-center gap-3 text-ink-2 text-sm">
+            <User className="w-5 h-5 shrink-0" />
             <span>현장 방문 접수 (차량 연동 없음)</span>
-          </div>
+          </section>
         )}
 
-        {/* 진행 감사 이력 (Chronological Audit Timeline) */}
-        <div className="bg-slate-900/60 border border-slate-800/90 rounded-2xl p-4">
-          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-800">
-            <Clock className="w-4 h-4 text-indigo-400" />
-            <h4 className="text-xs font-bold text-white">
-              진행 감사 이력 (Audit Timeline)
-            </h4>
-          </div>
+        <section className="pt-5 border-t border-line">
+          <h4 className="text-sm font-bold text-ink mb-4">진행 감사 이력 (Audit Timeline)</h4>
 
           <div className="relative pl-6 space-y-4">
-            {/* 세로 타임라인 연결선 */}
-            <div className="absolute left-2.5 top-2 bottom-2 w-0.5 bg-slate-800" />
+            <div className="absolute left-2.5 top-2 bottom-2 w-0.5 bg-line" />
 
             {timeline.map((event) => {
-              const isSuccess = event.type === 'SUCCESS';
-              const isWarning = event.type === 'WARNING';
-              const isAlert = event.type === 'ALERT';
-
+              const tone = markerTone(event.type);
               return (
                 <div key={event.id} className="relative flex items-start gap-3">
-                  {/* 타임라인 노드 마커 */}
                   <div
-                    className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 z-10 ${
-                      isSuccess
-                        ? 'bg-emerald-950 border-emerald-500 text-emerald-400'
-                        : isWarning
-                        ? 'bg-amber-950 border-amber-500 text-amber-400'
-                        : isAlert
-                        ? 'bg-rose-950 border-rose-500 text-rose-400'
-                        : 'bg-blue-950 border-blue-500 text-blue-400'
-                    }`}
+                    className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full border-2 bg-surface flex items-center justify-center shrink-0 z-10 ${tone.ring}`}
                   >
-                    <div
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        isSuccess
-                          ? 'bg-emerald-400'
-                          : isWarning
-                          ? 'bg-amber-400'
-                          : isAlert
-                          ? 'bg-rose-400'
-                          : 'bg-blue-400'
-                      }`}
-                    />
+                    <div className={`w-1.5 h-1.5 rounded-full ${tone.dot}`} />
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-200">
-                        {event.title}
-                      </span>
-                      <span className="text-[10px] font-mono text-slate-500 tabular-nums">
-                        {event.timestamp}
-                      </span>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-bold text-ink">{event.title}</span>
+                      {event.timestamp && (
+                        <span className="text-xs text-ink-2 tabular-nums shrink-0">
+                          {event.timestamp}
+                        </span>
+                      )}
                     </div>
                     {event.description && (
-                      <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
+                      <p className="text-xs text-ink-2 mt-0.5 leading-relaxed">
                         {event.description}
                       </p>
                     )}
@@ -471,43 +404,35 @@ export const TeamDetailDrawer: React.FC<TeamDetailDrawerProps> = ({
               );
             })}
           </div>
-        </div>
+        </section>
       </div>
 
-      {/* 3. 하단 고정 액션 버튼 바 (48px 터치 타깃 & .active-press) */}
-      <div className="p-4 border-t border-slate-800/80 bg-slate-900/95 shrink-0">
+      <div className="p-4 border-t border-line shrink-0">
         <div className="grid grid-cols-3 gap-2">
-          {/* 호출 버튼 */}
           <button
             type="button"
             onClick={() => onCall(selectedTeam.id)}
-            className={`min-h-[48px] h-12 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer select-none touch-manipulation transition-all duration-120 ease-out active-press ${
-              status === 'CALLED'
-                ? 'bg-amber-500 text-slate-950 touch-hover-amber-400'
-                : 'bg-indigo-600 touch-hover-indigo-500 text-white'
-            }`}
+            className={`${action} ${isCalled ? secondary : primary}`}
           >
-            <Bell className="w-3.5 h-3.5 shrink-0" />
-            <span>{status === 'CALLED' ? '재호출' : '호출'}</span>
+            <Bell className="w-4 h-4 shrink-0" />
+            <span>{isCalled ? '재호출' : '호출'}</span>
           </button>
 
-          {/* 착석 버튼 */}
           <button
             type="button"
             onClick={() => onSeat(selectedTeam.id)}
-            className="min-h-[48px] h-12 px-3 bg-emerald-600 touch-hover-emerald-500 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer select-none touch-manipulation transition-all duration-120 ease-out active-press"
+            className={`${action} ${isCalled ? primary : secondary}`}
           >
-            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
             <span>착석</span>
           </button>
 
-          {/* 노쇼 버튼 */}
           <button
             type="button"
             onClick={() => onNoShow(selectedTeam.id)}
-            className="min-h-[48px] h-12 px-3 bg-slate-700 touch-hover-rose-900-70 touch-hover-text-rose-200 text-slate-300 rounded-xl font-medium text-xs flex items-center justify-center gap-1.5 cursor-pointer select-none touch-manipulation transition-all duration-120 ease-out active-press"
+            className={`${action} bg-sunken touch-hover-danger text-ink-2 font-medium`}
           >
-            <UserX className="w-3.5 h-3.5 shrink-0" />
+            <UserX className="w-4 h-4 shrink-0" />
             <span>노쇼</span>
           </button>
         </div>

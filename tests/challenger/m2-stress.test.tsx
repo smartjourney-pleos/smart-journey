@@ -27,7 +27,7 @@ describe('Milestone M2 Empirical Challenger Stress Suite', () => {
       expect(card).not.toBeNull();
       // Verify card styling tokens
       expect(card.className).toContain('active-press');
-      expect(card.className).toContain('rounded-2xl');
+      expect(card.className).toContain('rounded-lg');
       expect(card.className).toContain('p-5');
       expect(card.className).toContain('touch-manipulation');
     });

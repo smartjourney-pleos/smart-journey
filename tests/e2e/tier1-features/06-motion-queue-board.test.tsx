@@ -43,9 +43,9 @@ describe('Tier 1 - Feature 06: Fluid Motion Queue Board', () => {
 
   it('applies responsive grid classes for tablet columns', async () => {
     const { container } = await renderLoggedInApp();
-    const grid = container.querySelector('.grid.grid-cols-1');
+    const grid = container.querySelector('.grid.gap-4[class*="auto-fill"]');
     expect(grid).not.toBeNull();
-    expect(grid?.className).toContain('lg:grid-cols-3');
+    expect(grid?.className).toContain('auto-fill');
   });
 
   it('provides dedicated vertical scrolling container with padding', async () => {

@@ -32,7 +32,7 @@ describe('Milestone M2 Challenger 2 Empirical Stress Suite: Touch Targets, Micro
         expect(btn.className).toContain('cursor-pointer');
         expect(btn.className).toContain('active-press');
         expect(btn.className).toContain('select-none');
-        expect(btn.className).toContain('rounded-xl');
+        expect(btn.className).toContain('rounded-md');
       }
     });
 
@@ -71,7 +71,7 @@ describe('Milestone M2 Challenger 2 Empirical Stress Suite: Touch Targets, Micro
       expect(onSelect).not.toHaveBeenCalled();
 
       // Click card body directly
-      const cardContainer = callBtn.closest('.rounded-2xl') as HTMLElement;
+      const cardContainer = callBtn.closest('.rounded-lg') as HTMLElement;
       expect(cardContainer).not.toBeNull();
       fireEvent.click(cardContainer);
       expect(onSelect).toHaveBeenCalledTimes(1);
@@ -101,7 +101,7 @@ describe('Milestone M2 Challenger 2 Empirical Stress Suite: Touch Targets, Micro
         expect(btn.className).toContain('touch-manipulation');
         expect(btn.className).toContain('cursor-pointer');
         expect(btn.className).toContain('select-none');
-        expect(btn.className).toContain('rounded-xl');
+        expect(btn.className).toContain('rounded-md');
       }
     });
   });
@@ -194,9 +194,8 @@ describe('Milestone M2 Challenger 2 Empirical Stress Suite: Touch Targets, Micro
         );
 
         expect(screen.getByText(c.expected)).toBeDefined();
-        // Check ping dot indicator presence
-        const pingDot = document.querySelector('.animate-ping');
-        expect(pingDot).not.toBeNull();
+        // Status is carried by the tinted badge, not by a pulsing dot
+        expect(document.querySelector('.animate-ping')).toBeNull();
         unmount();
       }
     });
@@ -358,8 +357,8 @@ describe('Milestone M2 Challenger 2 Empirical Stress Suite: Touch Targets, Micro
       );
 
       const cardUnselected = container.firstElementChild as HTMLElement;
-      expect(cardUnselected.className).not.toContain('border-cyan-500/80');
-      expect(cardUnselected.className).not.toContain('ring-2 ring-cyan-500/40');
+      expect(cardUnselected.className).not.toContain('border-main');
+      expect(cardUnselected.className).not.toContain('ring-2 ring-main');
 
       rerender(
         <WaitingCard
@@ -372,10 +371,10 @@ describe('Milestone M2 Challenger 2 Empirical Stress Suite: Touch Targets, Micro
       );
 
       const cardSelected = container.firstElementChild as HTMLElement;
-      expect(cardSelected.className).toContain('border-cyan-500/80');
-      expect(cardSelected.className).toContain('ring-2 ring-cyan-500/40');
-      expect(cardSelected.className).toContain('-translate-y-0.5');
-      expect(cardSelected.className).toContain('shadow-cyan-950/40');
+      expect(cardSelected.className).toContain('border-main');
+      expect(cardSelected.className).toContain('ring-2 ring-main');
+      expect(cardSelected.className).not.toContain('translate');
+      expect(cardSelected.className).not.toContain('shadow');
     });
   });
 
@@ -416,12 +415,12 @@ describe('Milestone M2 Challenger 2 Empirical Stress Suite: Touch Targets, Micro
 
       // Verify active styling on ALL tab
       const allTab = screen.getByRole('button', { name: /전체/ });
-      expect(allTab.className).toContain('bg-indigo-600');
+      expect(allTab.className).toContain('bg-main');
       expect(allTab.className).toContain('text-white');
 
       // Verify inactive styling on other tabs
       const movingTab = screen.getByRole('button', { name: /이동 중/ });
-      expect(movingTab.className).toContain('text-slate-400');
+      expect(movingTab.className).toContain('text-ink-2');
 
       // Click MOVING tab
       fireEvent.click(movingTab);
@@ -438,8 +437,8 @@ describe('Milestone M2 Challenger 2 Empirical Stress Suite: Touch Targets, Micro
         />
       );
 
-      expect(movingTab.className).toContain('bg-indigo-600');
-      expect(allTab.className).toContain('text-slate-400');
+      expect(movingTab.className).toContain('bg-main');
+      expect(allTab.className).toContain('text-ink-2');
     });
   });
 
@@ -489,12 +488,11 @@ describe('Milestone M2 Challenger 2 Empirical Stress Suite: Touch Targets, Micro
 
       // Card border and ring for CALLED
       const callBtn = screen.getByRole('button', { name: /재호출/i });
-      expect(callBtn.className).toContain('bg-amber-500');
-      expect(callBtn.className).toContain('text-slate-950');
+      expect(callBtn.className).toContain('bg-surface');
+      expect(callBtn.className).toContain('text-ink');
 
-      const card = callBtn.closest('.rounded-2xl') as HTMLElement;
-      expect(card.className).toContain('border-amber-500/60');
-      expect(card.className).toContain('ring-amber-500/30');
+      const card = callBtn.closest('.rounded-lg') as HTMLElement;
+      expect(card.querySelector('span.bg-sub')).not.toBeNull();
     });
   });
 });

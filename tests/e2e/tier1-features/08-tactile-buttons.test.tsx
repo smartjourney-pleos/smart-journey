@@ -20,7 +20,7 @@ describe('Tier 1 - Feature 08: Tactile Button Micro-Interactions', () => {
   });
 
   it('applies tactile cursor-pointer to action buttons', () => {
-    const item = createMockItem({ status: 'REGISTERED' });
+    const item = createMockItem({ status: 'CALLED' });
     render(
       <WaitingCard
         item={item}
@@ -33,7 +33,7 @@ describe('Tier 1 - Feature 08: Tactile Button Micro-Interactions', () => {
     expect(seatBtn.className).toContain('cursor-pointer');
   });
 
-  it('applies rounded-xl border radius token to tactile action buttons', () => {
+  it('applies rounded-md border radius token to tactile action buttons', () => {
     const item = createMockItem({ status: 'REGISTERED' });
     render(
       <WaitingCard
@@ -44,11 +44,11 @@ describe('Tier 1 - Feature 08: Tactile Button Micro-Interactions', () => {
       />
     );
     const callBtn = screen.getByRole('button', { name: /호출/i });
-    expect(callBtn.className).toContain('rounded-xl');
+    expect(callBtn.className).toContain('rounded-md');
   });
 
-  it('styles seat button with emerald theme palette', () => {
-    const item = createMockItem({ status: 'REGISTERED' });
+  it('fills the seat button once the team has been called', () => {
+    const item = createMockItem({ status: 'CALLED' });
     render(
       <WaitingCard
         item={item}
@@ -58,10 +58,10 @@ describe('Tier 1 - Feature 08: Tactile Button Micro-Interactions', () => {
       />
     );
     const seatBtn = screen.getByRole('button', { name: /착석/i });
-    expect(seatBtn.className).toContain('bg-emerald-600');
+    expect(seatBtn.className).toContain('bg-main');
   });
 
-  it('shifts call button to amber palette when team is already CALLED', () => {
+  it('demotes call button to an outline when team is already CALLED', () => {
     const item = createMockItem({ status: 'CALLED' });
     render(
       <WaitingCard
@@ -72,6 +72,6 @@ describe('Tier 1 - Feature 08: Tactile Button Micro-Interactions', () => {
       />
     );
     const recallBtn = screen.getByRole('button', { name: /재호출/i });
-    expect(recallBtn.className).toContain('bg-amber-500');
+    expect(recallBtn.className).toContain('bg-surface');
   });
 });

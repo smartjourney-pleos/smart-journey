@@ -42,12 +42,12 @@ describe('Tier 1 - Feature 17: Vehicle Arrival & Alighting Trigger', () => {
     expect(screen.getByText('13')).toBeDefined();
   });
 
-  it('applies emerald border treatment to arrived vehicle cards', async () => {
+  it('marks arrived vehicle cards with the main-color status stripe', async () => {
     const { container } = await renderLoggedInApp();
     const simBtn = screen.getByRole('button', { name: /하차 확인 이벤트 발생/i });
     fireEvent.click(simBtn);
 
-    const emeraldCards = container.querySelectorAll('.border-emerald-500\\/40');
-    expect(emeraldCards.length).toBeGreaterThanOrEqual(2);
+    const arrivedStripes = container.querySelectorAll('span.absolute.bg-main');
+    expect(arrivedStripes.length).toBeGreaterThanOrEqual(2);
   });
 });

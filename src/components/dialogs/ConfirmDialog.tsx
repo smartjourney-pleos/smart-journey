@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, CheckCircle2, AlertTriangle, Users } from 'lucide-react';
+import { X, AlertTriangle, CheckCircle2, ShieldAlert } from 'lucide-react';
 
 export type ConfirmActionType =
   | 'SEAT'
@@ -23,7 +23,7 @@ export interface ConfirmDialogProps {
   /** 취소 버튼 텍스트 */
   cancelLabel?: string;
   /** 확인 버튼 색상 테마 */
-  confirmVariant?: 'emerald' | 'rose' | 'indigo' | 'amber';
+  confirmVariant?: 'main' | 'danger' | 'sub';
   /** 대상 팀 대기 번호 */
   ticketNo?: number;
   /** 대상 팀 고객명 */
@@ -107,21 +107,19 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   const finalConfirmLabel = confirmLabel || defaultConfirmLabel;
 
   const variant =
-    confirmVariant || (isSeat ? 'emerald' : isNoShow ? 'rose' : 'indigo');
+    confirmVariant || (isSeat ? 'main' : isNoShow ? 'danger' : 'main');
 
   const confirmBtnStyles =
-    variant === 'emerald'
-      ? 'bg-emerald-600 touch-hover-emerald-500 text-white'
-      : variant === 'rose'
-      ? 'bg-rose-600 touch-hover-rose-500 text-white'
-      : variant === 'amber'
-      ? 'bg-amber-600 touch-hover-amber-500 text-slate-950 font-bold'
-      : 'bg-indigo-600 touch-hover-indigo-500 text-white';
+    variant === 'danger'
+      ? 'bg-danger touch-hover-danger-solid text-white'
+      : variant === 'sub'
+      ? 'bg-sub touch-hover-sub text-ink'
+      : 'bg-main touch-hover-main text-white';
 
   return (
     <AnimatePresence>
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm select-none touch-manipulation"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/50 select-none touch-manipulation"
         onClick={(e) => {
           if (e.target === e.currentTarget) {
             onCancel();
@@ -134,85 +132,69 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ type: 'spring', damping: 25, stiffness: 350, duration: 0.2 }}
           onClick={(e) => e.stopPropagation()}
-          className={`bg-slate-900 border border-slate-700/80 rounded-2xl md:rounded-3xl shadow-2xl max-w-md w-full overflow-hidden text-slate-100 ${className}`}
+          className={`bg-surface rounded-lg shadow-xl shadow-pleos-3 max-w-md w-full overflow-hidden text-ink border border-line ${className}`}
         >
-          {/* 헤더 */}
-          <div className="p-5 border-b border-slate-800 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
-                  isSeat
-                    ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
-                    : isNoShow
-                    ? 'bg-rose-500/20 border-rose-500/40 text-rose-400'
-                    : 'bg-indigo-500/20 border-indigo-500/40 text-indigo-400'
-                }`}
-              >
-                {isSeat ? (
-                  <CheckCircle2 className="w-5 h-5" />
-                ) : (
-                  <AlertTriangle className="w-5 h-5" />
-                )}
-              </div>
-              <h3 className="text-base font-bold text-white tracking-tight">
-                {modalTitle}
-              </h3>
+          {/* Pleos System Popup Header */}
+          <div className="px-6 py-4 border-b border-line flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              {isSeat ? (
+                <CheckCircle2 className="w-5 h-5 text-main" />
+              ) : isNoShow ? (
+                <ShieldAlert className="w-5 h-5 text-danger" />
+              ) : (
+                <AlertTriangle className="w-5 h-5 text-sub" />
+              )}
+              <h3 className="text-lg font-bold text-ink">{modalTitle}</h3>
             </div>
 
             <button
               type="button"
               onClick={onCancel}
               aria-label="닫기"
-              className="w-12 h-12 min-h-[48px] min-w-[48px] rounded-xl flex items-center justify-center text-slate-400 touch-hover-slate-700 touch-hover-text-slate-200 active-press cursor-pointer border border-transparent touch-hover-border-slate-700 transition-colors"
+              className="w-12 h-12 min-h-[48px] min-w-[48px] -mr-3 rounded-md flex items-center justify-center text-ink-2 touch-hover-sunken touch-hover-ink active-press cursor-pointer transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* 본문 */}
+          {/* Pleos Popup Body */}
           <div className="p-6 space-y-4">
-            {/* 팀 요약 정보 (있을 경우) */}
             {(ticketNo !== undefined || partySize !== undefined) && (
-              <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-3 flex items-center justify-between">
+              <div className="bg-sunken rounded-md px-4 py-3 flex items-center justify-between border border-line/60">
                 {ticketNo !== undefined && (
-                  <span className="font-mono text-sm font-bold text-white tabular-nums">
+                  <span className="text-base font-bold text-ink tabular-nums">
                     No. {ticketNo}
                   </span>
                 )}
                 {partySize !== undefined && (
-                  <div className="flex items-center gap-1.5 text-xs text-slate-300">
-                    <Users className="w-3.5 h-3.5 text-indigo-400" />
-                    <span className="font-mono font-bold text-white tabular-nums">
-                      {partySize}명
-                    </span>
-                  </div>
+                  <span className="text-base font-bold text-ink tabular-nums">
+                    {partySize}명
+                  </span>
                 )}
               </div>
             )}
 
-            <p className="text-sm text-slate-200 leading-relaxed">
-              {modalDescription}
-            </p>
+            <p className="text-base text-ink leading-relaxed font-medium">{modalDescription}</p>
 
             {consequenceText && (
-              <div
-                className={`p-3.5 rounded-xl text-xs leading-relaxed border ${
+              <p
+                className={`px-4 py-3 rounded-md text-sm leading-relaxed border ${
                   isSeat
-                    ? 'bg-emerald-950/50 border-emerald-500/30 text-emerald-300'
-                    : 'bg-rose-950/50 border-rose-500/30 text-rose-300'
+                    ? 'bg-main-tint text-main border-main/20'
+                    : 'bg-danger-tint text-danger border-danger/20 font-medium'
                 }`}
               >
                 {consequenceText}
-              </div>
+              </p>
             )}
           </div>
 
-          {/* 푸터 액션 (모든 버튼 strictly >= 48px 터치 타깃) */}
-          <div className="p-5 border-t border-slate-800 bg-slate-950/60 flex items-center justify-end gap-3">
+          {/* Pleos Popup Action Row (Horizontal Align) */}
+          <div className="px-6 py-4 border-t border-line flex items-center justify-end gap-3 bg-sunken/20">
             <button
               type="button"
               onClick={onCancel}
-              className="min-h-[48px] h-12 px-5 bg-slate-800 touch-hover-slate-700 text-slate-300 rounded-xl font-medium text-sm flex items-center justify-center cursor-pointer select-none touch-manipulation transition-all duration-120 ease-out active-press"
+              className="min-h-[48px] h-12 px-5 bg-sunken touch-hover-line text-ink rounded-md font-medium text-sm flex items-center justify-center cursor-pointer select-none touch-manipulation transition-colors duration-150 ease-out active-press"
             >
               {cancelLabel}
             </button>
@@ -220,7 +202,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             <button
               type="button"
               onClick={onConfirm}
-              className={`min-h-[48px] h-12 px-5 rounded-xl font-bold text-sm flex items-center justify-center cursor-pointer select-none touch-manipulation transition-all duration-120 ease-out active-press ${confirmBtnStyles}`}
+              className={`min-h-[48px] h-12 px-5 rounded-md font-bold text-sm flex items-center justify-center cursor-pointer select-none touch-manipulation transition-colors duration-150 ease-out active-press shadow-sm ${confirmBtnStyles}`}
             >
               {finalConfirmLabel}
             </button>

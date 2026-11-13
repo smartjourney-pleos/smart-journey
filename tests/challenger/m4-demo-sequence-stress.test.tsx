@@ -15,7 +15,7 @@ function queryTicketCard(ticketNo: number): HTMLElement | null {
     if (parent) {
       const numSpan = parent.querySelector('span[class*="tabular-nums"]');
       if (numSpan && numSpan.textContent?.trim() === String(ticketNo)) {
-        return parent.closest('div[class*="rounded-2xl"]');
+        return parent.closest('div[class*="rounded-lg"]');
       }
     }
   }
@@ -80,8 +80,8 @@ describe('Milestone M4 Sequence & Boundaries Challenger: Evaluator Demo Panel & 
       expect(screen.getByText('현장 0팀')).toBeDefined();
 
       // 4. Vehicle tickets 12 and 13 are completely intact without any corruption
-      const card12 = screen.getByText('12').closest('div[class*="rounded-2xl"]');
-      const card13 = screen.getByText('13').closest('div[class*="rounded-2xl"]');
+      const card12 = screen.getByText('12').closest('div[class*="rounded-lg"]');
+      const card13 = screen.getByText('13').closest('div[class*="rounded-lg"]');
       expect(card12).not.toBeNull();
       expect(card13).not.toBeNull();
 
@@ -410,17 +410,17 @@ describe('Milestone M4 Sequence & Boundaries Challenger: Evaluator Demo Panel & 
       await renderLoggedInApp();
 
       // Open TeamDetailDrawer by clicking card 12
-      const card12 = screen.getByText('12').closest('div[class*="rounded-2xl"]');
+      const card12 = screen.getByText('12').closest('div[class*="rounded-lg"]');
       fireEvent.click(card12!);
 
       expect(screen.getByText('대기 상세 정보')).toBeDefined();
-      expect(screen.queryByText('심사·시연 데모 컨트롤러')).toBeNull();
+      expect(screen.queryByText('시연 제어 패널')).toBeNull();
 
       // Close drawer to reveal DemoPanel
       const closeDrawerBtn = screen.getByRole('button', { name: '상세 닫기' });
       fireEvent.click(closeDrawerBtn);
 
-      expect(screen.getByText('심사·시연 데모 컨트롤러')).toBeDefined();
+      expect(screen.getByText('시연 제어 패널')).toBeDefined();
 
       // Trigger reset
       const resetBtn = screen.getByRole('button', { name: /시연 초기 상태로 리셋/i });
@@ -428,7 +428,7 @@ describe('Milestone M4 Sequence & Boundaries Challenger: Evaluator Demo Panel & 
 
       // Drawer remains closed and DemoPanel remains active
       expect(screen.queryByText('대기 상세 정보')).toBeNull();
-      expect(screen.getByText('심사·시연 데모 컨트롤러')).toBeDefined();
+      expect(screen.getByText('시연 제어 패널')).toBeDefined();
     });
 
     it('empirically verifies DemoPanel close button collapses right contextual slot and Header demo toggle reopens it', async () => {
@@ -475,7 +475,7 @@ describe('Milestone M4 Sequence & Boundaries Challenger: Evaluator Demo Panel & 
       expect(completedTimes.length).toBeGreaterThanOrEqual(2);
 
       // 3. Walk-in ticket 14 is NOT touched by vehicle alighting
-      const card14 = screen.getByText('14').closest('div[class*="rounded-2xl"]');
+      const card14 = screen.getByText('14').closest('div[class*="rounded-lg"]');
       expect(card14).not.toBeNull();
       expect(within(card14!).queryByText(/하차 완료/i)).toBeNull();
       expect(within(card14!).getByText('이동 중')).toBeDefined();
@@ -489,7 +489,7 @@ describe('Milestone M4 Sequence & Boundaries Challenger: Evaluator Demo Panel & 
       fireEvent.click(arrivalBtn);
 
       // Click card 13 (2명, VEHICLE)
-      const card13 = screen.getByText('13').closest('div[class*="rounded-2xl"]');
+      const card13 = screen.getByText('13').closest('div[class*="rounded-lg"]');
       fireEvent.click(card13!);
 
       const drawer = screen.getByText('대기 상세 정보').closest('aside')!;
@@ -509,7 +509,7 @@ describe('Milestone M4 Sequence & Boundaries Challenger: Evaluator Demo Panel & 
       fireEvent.click(arrivalBtn);
 
       // Click card 12 (4명, VEHICLE)
-      const card12 = screen.getByText('12').closest('div[class*="rounded-2xl"]');
+      const card12 = screen.getByText('12').closest('div[class*="rounded-lg"]');
       fireEvent.click(card12!);
 
       const drawer = screen.getByText('대기 상세 정보').closest('aside')!;
@@ -616,7 +616,7 @@ describe('Milestone M4 Sequence & Boundaries Challenger: Evaluator Demo Panel & 
       );
 
       expect(screen.getByText('시연 제어 패널')).toBeDefined();
-      expect(screen.getByText('심사·시연 데모 컨트롤러')).toBeDefined();
+      expect(screen.getByText('시연 제어 패널')).toBeDefined();
       expect(screen.getByText('실시간 연동')).toBeDefined();
     });
   });

@@ -26,6 +26,21 @@ export function App() {
   const [isDemoOpen, setIsDemoOpen] = useState<boolean>(true);
   const [currentFilter, setCurrentFilter] = useState<QueueFilterTab>('ALL');
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+
+  const handleToggleDarkMode = useCallback(() => {
+    setIsDarkMode((prev) => {
+      const next = !prev;
+      if (typeof document !== 'undefined') {
+        if (next) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }
+      return next;
+    });
+  }, []);
 
   // P-04 안전 확인 다이얼로그 상태 (상세 패널 전용)
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -430,6 +445,8 @@ export function App() {
             }}
             onOpenSettings={() => setIsSettingsOpen(true)}
             onLogout={handleLogout}
+            isDarkMode={isDarkMode}
+            onToggleDarkMode={handleToggleDarkMode}
           />
         }
         leftSidebar={
