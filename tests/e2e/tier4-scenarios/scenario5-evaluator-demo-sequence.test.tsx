@@ -10,7 +10,7 @@ describe('Tier 4 - Scenario 5: Evaluator PT Live Demonstration Sequence', () => 
     // Step 1: Pristine Baseline State
     // ========================================================
     // Judge observes store dashboard: 3 teams ahead, 15 min wait, 2 vehicles
-    expect(screen.getByText('하늘본가 숯불갈비 시흥본점')).toBeDefined();
+    expect(screen.getByText('42dot')).toBeDefined();
     expect(screen.getByText('3 건')).toBeDefined();
     expect(screen.getByText('3')).toBeDefined();
     expect(screen.getByText('15')).toBeDefined();

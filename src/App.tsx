@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Header } from './components/layout/Header';
 import { TabletLayout } from './components/layout/TabletLayout';
 import { StoreSummary } from './components/sidebar/StoreSummary';
@@ -15,8 +15,6 @@ import type {
   QueueFilterTab,
   StoreSettings,
   WaitingItem,
-  TimelineEvent,
-  ArrivalCheckResult,
 } from './types/pos';
 
 export function App() {
@@ -59,131 +57,40 @@ export function App() {
     return data.queue.find((item) => item.id === selectedTeamId) ?? null;
   }, [selectedTeamId, data.queue]);
 
-  // STOMP WebSocket 연결 및 실시간 갱신 처리
-  const handleQueueUpdated = useCallback((stompMessage: unknown) => {
-    if (!stompMessage || typeof stompMessage !== 'object') return;
-
-    const msg = stompMessage as Record<string, unknown>;
-
-    // 1. 전체 큐 갱신 이벤트 또는 페이로드
-    if (
-      msg.type === 'QUEUE_UPDATE' ||
-      msg.type === 'QUEUE_UPDATED' ||
-      Array.isArray(msg.queue)
-    ) {
-      setData((prev) => {
-        const newQueue: WaitingItem[] = Array.isArray(msg.queue)
-          ? (msg.queue as WaitingItem[])
-          : prev.queue;
-        const newAhead: number =
-          typeof msg.aheadTeams === 'number' ? msg.aheadTeams : prev.aheadTeams;
-        const newEstWait: number =
-          typeof msg.estimatedWaitMin === 'number'
-            ? msg.estimatedWaitMin
-            : prev.store.settings.manualWaitMin ??
-              newAhead * prev.store.settings.minutesPerTeam;
-
-        return {
-          ...prev,
-          aheadTeams: newAhead,
-          estimatedWaitMin: newEstWait,
-          queue: newQueue,
-        };
-      });
-      return;
-    }
-
-    // 2. 하차 센서 이벤트 (ALIGHTING_EVENT / ARRIVAL_REPORTED)
-    if (msg.type === 'ALIGHTING_EVENT' || msg.type === 'ARRIVAL_REPORTED') {
-      const targetId = (msg.waitingId || msg.id) as string | undefined;
-      if (!targetId) return;
-
-      setData((prev) => ({
-        ...prev,
-        queue: prev.queue.map((item) => {
-          if (item.id !== targetId) return item;
-
-          const alightedCount =
-            typeof msg.alighted === 'number' ? msg.alighted : item.partySize;
-          const isConfirmed = alightedCount >= item.partySize;
-          const arrivalResult: ArrivalCheckResult = isConfirmed
-            ? 'CONFIRMED'
-            : 'UNCONFIRMED';
-          const nextStatus =
-            item.status === 'REGISTERED' ? 'ARRIVED' : item.status;
-
-          const nowTimestamp = new Date().toLocaleTimeString('ko-KR', {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false,
-          });
-
-          const alightingEvent: TimelineEvent = {
-            id: `evt-alight-${Date.now()}`,
-            timestamp: nowTimestamp,
-            title: '하차 센서 확인',
-            description: `${alightedCount}/${item.partySize}명 하차 완료`,
-            type: 'SUCCESS',
-          };
-
-          return {
-            ...item,
-            status: nextStatus,
-            alighted: alightedCount,
-            arrivalResult,
-            alighting: {
-              status: isConfirmed ? 'CONFIRMED' : 'PARTIAL',
-              alightedCount,
-              totalPassengers: item.partySize,
-              lastSensorTime: nowTimestamp,
-            },
-            timeline: item.timeline
-              ? [...item.timeline, alightingEvent]
-              : [alightingEvent],
-          };
-        }),
-      }));
-      return;
-    }
-
-    // 3. ETA 갱신 이벤트 (ETA_UPDATE / ETA_UPDATED)
-    if (msg.type === 'ETA_UPDATE' || msg.type === 'ETA_UPDATED') {
-      const targetId = (msg.waitingId || msg.id) as string | undefined;
-      if (!targetId) return;
-
-      setData((prev) => ({
-        ...prev,
-        queue: prev.queue.map((item) => {
-          if (item.id !== targetId) return item;
-
-          const newEta =
-            typeof msg.etaMin === 'number' ? msg.etaMin : item.etaMin;
-          const nextStatus =
-            newEta <= 0 && item.status === 'REGISTERED'
-              ? 'ARRIVED'
-              : item.status;
-
-          return {
-            ...item,
-            etaMin: newEta,
-            status: nextStatus,
-          };
-        }),
-      }));
-      return;
+  // 서버 대기열로 화면을 맞춘다. 서버의 /topic/pos 이벤트는 카드 한 장이라 받으면 전체를 다시 읽는다 (재연결 동기화와 같은 규칙).
+  const refresh = useCallback(async () => {
+    try {
+      const queue = await posApi.getQueue();
+      if (queue) setData(queue);
+    } catch (e) {
+      console.warn(e);
     }
   }, []);
 
+  // 서버 액션 뒤 결과로 다시 맞춘다. 실패하면 낙관적으로 바꾼 화면도 서버 값으로 되돌린다.
+  const sync = (request: Promise<void>) => {
+    request.catch((e) => console.warn(e)).finally(refresh);
+  };
+
+  // ponytail: STOMP가 끊겨도 맞도록 5초마다 다시 읽는다. 부하가 문제면 끊겼을 때만 돌린다.
+  useEffect(() => {
+    if (!isLoggedIn || !posApi.isServer()) return;
+    const timer = setInterval(refresh, 5000);
+    return () => clearInterval(timer);
+  }, [isLoggedIn, refresh]);
+
   const stompStatus = usePosStomp(
-    isLoggedIn ? data.store.id : '',
-    handleQueueUpdated
+    isLoggedIn && posApi.isServer() ? data.store.id : '',
+    posApi.serverToken(),
+    refresh
   );
 
   // 로그인 처리
   const handleLogin = async (storeId: string, pin: string) => {
     const res = await posApi.login(storeId, pin);
     posApi.setToken(res.token);
+    if (posApi.isServer()) await refresh();
+    else setData({ ...initialMockQueue, store: { ...initialMockQueue.store, id: storeId, name: res.storeName } });
     setIsLoggedIn(true);
   };
 
@@ -200,11 +107,11 @@ export function App() {
         item.id === waitingId ? { ...item, status: 'CALLED' } : item
       ),
     }));
-    posApi.callWaiting(waitingId);
+    sync(posApi.callWaiting(waitingId));
   };
 
-  // 착석 완료 (즉시 실행)
-  const handleSeat = (waitingId: string) => {
+  // 착석·노쇼 공통: 화면에서 먼저 뺀다 (즉시 실행)
+  const removeTeam = (waitingId: string) => {
     setData((prev) => {
       const filtered = prev.queue.filter((item) => item.id !== waitingId);
       const newAhead = Math.max(0, prev.aheadTeams - 1);
@@ -219,13 +126,17 @@ export function App() {
       };
     });
     setSelectedTeamId((prev) => (prev === waitingId ? null : prev));
-    posApi.seatWaiting(waitingId);
+  };
+
+  const handleSeat = (waitingId: string) => {
+    removeTeam(waitingId);
+    sync(posApi.seatWaiting(waitingId));
   };
 
   // 노쇼 처리 (즉시 실행)
   const handleNoShow = (waitingId: string) => {
-    handleSeat(waitingId);
-    posApi.noShowWaiting(waitingId);
+    removeTeam(waitingId);
+    sync(posApi.noShowWaiting(waitingId));
   };
 
   // 상세 패널에서 착석 트리거 -> 확인 다이얼로그 오픈
@@ -276,7 +187,7 @@ export function App() {
         estimatedWaitMin: estWait,
       };
     });
-    posApi.updateSettings(newSettings);
+    sync(posApi.updateSettings(newSettings));
   };
 
   // 데모 1: 현장 대기 +1 팀
@@ -314,7 +225,7 @@ export function App() {
       };
     });
 
-    posApi.triggerWalkInDemo(1);
+    sync(posApi.triggerWalkInDemo(1));
   };
 
   // 데모 2: 현장 대기 -1 팀
@@ -338,7 +249,7 @@ export function App() {
       };
     });
 
-    posApi.triggerWalkInDemo(-1);
+    sync(posApi.triggerWalkInDemo(-1));
   };
 
   // 데모 2-1: 골든타임 급증 시연 (+3팀)
@@ -380,7 +291,7 @@ export function App() {
       };
     });
 
-    posApi.triggerWalkInDemo(3);
+    sync(posApi.triggerWalkInDemo(3));
   };
 
   // 데모 3: 차량 도착 및 하차 완료 시뮬레이션
@@ -416,7 +327,8 @@ export function App() {
 
   // 데모 4: 초기 리셋
   const handleResetDemo = () => {
-    setData(initialMockQueue);
+    if (posApi.isServer()) sync(posApi.resetDemo());
+    else setData(initialMockQueue);
     setCurrentFilter('ALL');
     setSelectedTeamId(null);
   };

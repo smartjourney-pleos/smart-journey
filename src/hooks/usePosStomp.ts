@@ -8,6 +8,7 @@ export interface StompStatus {
 
 export function usePosStomp(
   storeId: string,
+  token: string | null,
   onQueueUpdated?: (data: unknown) => void
 ) {
   const [status, setStatus] = useState<StompStatus>({
@@ -25,11 +26,15 @@ export function usePosStomp(
 
     const client = new Client({
       brokerURL,
+      // 서버가 CONNECT 헤더의 JWT로 구독 권한을 검사한다
+      connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
       onConnect: () => {
         setStatus({ isConnected: true, reconnectAttempts: 0 });
+        // 끊긴 동안 놓친 변경을 REST로 맞춘다
+        onQueueUpdated?.(null);
 
         // 1. 매장 큐 종합 토픽 구독
         client.subscribe(`/topic/stores/${storeId}/queue`, (message) => {
@@ -85,7 +90,7 @@ export function usePosStomp(
         clientRef.current.deactivate();
       }
     };
-  }, [storeId, onQueueUpdated]);
+  }, [storeId, token, onQueueUpdated]);
 
   return status;
 }
