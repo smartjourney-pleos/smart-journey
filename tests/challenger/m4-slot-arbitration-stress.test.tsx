@@ -17,7 +17,7 @@ async function renderLoggedInApp() {
   const loginButton = screen.queryByRole('button', { name: /POS 시스템 접속/i });
   if (loginButton) {
     fireEvent.click(loginButton);
-    await screen.findByText('하늘본가 숯불갈비 시흥본점');
+    await screen.findByRole('heading', { name: '42dot' });
   }
   return result;
 }

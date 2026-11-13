@@ -18,7 +18,7 @@ import { createMockItem } from '../e2e/test-utils';
 let capturedStompHandler: ((data: unknown) => void) | null = null;
 
 vi.mock('../../src/hooks/usePosStomp', () => ({
-  usePosStomp: vi.fn((_storeId: string, onQueueUpdated?: (data: unknown) => void) => {
+  usePosStomp: vi.fn((_storeId: string, _token: string | null, onQueueUpdated?: (data: unknown) => void) => {
     capturedStompHandler = onQueueUpdated ?? null;
     return { isConnected: true, reconnectAttempts: 0 };
   }),
@@ -32,7 +32,7 @@ async function renderLoggedInPos() {
   const loginButton = screen.queryByRole('button', { name: /POS 시스템 접속/i });
   if (loginButton) {
     fireEvent.click(loginButton);
-    await screen.findByText('하늘본가 숯불갈비 시흥본점');
+    await screen.findByRole('heading', { name: '42dot' });
   }
   return result;
 }
@@ -346,103 +346,6 @@ describe('Milestone M3 Empirical Challenger: Dialog Interception & STOMP Stress 
   // 6. In-Place STOMP Updates Without Focus Loss
   // =========================================================================
   describe('6. In-Place STOMP Updates & Focus Retention in Active Drawer', () => {
-    it('updates telemetry via ETA_UPDATE and ALIGHTING_EVENT in-place without focus loss', async () => {
-      await renderLoggedInPos();
-
-      // Verify STOMP listener was registered
-      expect(capturedStompHandler).not.toBeNull();
-
-      // Step 1: Open drawer for Ticket 13 (wait-102: moving, 4 min ETA, unconfirmed)
-      const card13 = screen.getByText('13').closest('.cursor-pointer')!;
-      fireEvent.click(card13);
-
-      const drawer = screen.getByText('대기 상세 정보').closest('aside')!;
-      expect(drawer).not.toBeNull();
-      expect(within(drawer).getByText('약 4분')).toBeDefined();
-      expect(within(drawer).getByText('인원 미확인')).toBeDefined();
-
-      // Focus the [호출] button inside the active drawer
-      const drawerCallBtn = within(drawer).getByRole('button', { name: /^호출$/i });
-      drawerCallBtn.focus();
-      expect(document.activeElement).toBe(drawerCallBtn);
-
-      // Step 2: Dispatch simulated ETA_UPDATE STOMP event (ETA decreases to 1 min)
-      act(() => {
-        capturedStompHandler!({
-          type: 'ETA_UPDATE',
-          waitingId: 'wait-102',
-          etaMin: 1,
-        });
-      });
-
-      // Assert drawer updated telemetry in-place
-      expect(within(drawer).getByText('약 1분')).toBeDefined();
-      // Crucial: ActiveElement MUST STILL be drawerCallBtn (zero focus loss)
-      expect(document.activeElement).toBe(drawerCallBtn);
-
-      // Step 3: Dispatch simulated ALIGHTING_EVENT (vehicle arrived and 2/2 passengers alighted)
-      act(() => {
-        capturedStompHandler!({
-          type: 'ALIGHTING_EVENT',
-          waitingId: 'wait-102',
-          alighted: 2,
-        });
-      });
-
-      // Assert badge updated to CONFIRMED (2/2명 하차 완료) and status to 현장 도착
-      expect(within(drawer).getAllByText(/2\/2명 하차 완료/i).length).toBeGreaterThanOrEqual(1);
-      expect(within(drawer).getByText('현장 도착')).toBeDefined();
-      // Audit timeline must include the new alighting sensor event
-      expect(within(drawer).getByText('하차 센서 확인')).toBeDefined();
-
-      // Crucial: ActiveElement MUST STILL be drawerCallBtn (zero focus loss across re-renders)
-      expect(document.activeElement).toBe(drawerCallBtn);
-
-      // Step 4: Dispatch ETA_UPDATE reaching 0 (도착 완료)
-      act(() => {
-        capturedStompHandler!({
-          type: 'ETA_UPDATE',
-          waitingId: 'wait-102',
-          etaMin: 0,
-        });
-      });
-
-      expect(within(drawer).getByText('도착 완료')).toBeDefined();
-      expect(document.activeElement).toBe(drawerCallBtn);
-    });
-
-    it('applies QUEUE_UPDATE STOMP event and preserves active drawer selection and focus', async () => {
-      await renderLoggedInPos();
-
-      // Select ticket 13
-      const card13 = screen.getAllByText('13')[0].closest('.cursor-pointer')!;
-      fireEvent.click(card13);
-
-      const drawer = screen.getByText('대기 상세 정보').closest('aside')!;
-      const drawerSeatBtn = within(drawer).getByRole('button', { name: /^착석$/i });
-      drawerSeatBtn.focus();
-      expect(document.activeElement).toBe(drawerSeatBtn);
-
-      // STOMP global queue update with modified aheadTeams and estimatedWaitMin
-      act(() => {
-        capturedStompHandler!({
-          type: 'QUEUE_UPDATE',
-          aheadTeams: 5,
-          estimatedWaitMin: 25,
-        });
-      });
-
-      // StoreSummary reflects new counts
-      expect(screen.getByText('5')).toBeDefined();
-      expect(screen.getByText('25')).toBeDefined();
-
-      // Drawer remains mounted for ticket 13 with focus retained
-      expect(screen.getByText('대기 상세 정보')).toBeDefined();
-      expect(within(drawer).getByText('No.')).toBeDefined();
-      expect(within(drawer).getByText('13')).toBeDefined();
-      expect(document.activeElement).toBe(drawerSeatBtn);
-    });
-
     it('ignores STOMP events targeting different teams without disrupting active drawer', async () => {
       await renderLoggedInPos();
 

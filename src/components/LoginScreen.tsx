@@ -1,13 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { DEMO_STORES, posApi, type PosStoreOption } from '../api/posApi';
 import { Radio, Delete, RotateCcw, ShieldCheck, Store, KeyRound, Sparkles } from 'lucide-react';
 
 interface LoginScreenProps {
-  onLogin: (storeId: string, pin: string) => void;
+  onLogin: (storeId: string, pin: string) => Promise<void>;
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
-  const [storeId, setStoreId] = useState<string>('store-01');
+  const [stores, setStores] = useState<PosStoreOption[]>(DEMO_STORES);
+  const [storeId, setStoreId] = useState<string>(String(DEMO_STORES[0].storeId));
   const [pin, setPin] = useState<string>('1234');
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    posApi.getStores().then(setStores);
+  }, []);
 
   const handleKeypadPress = (digit: string) => {
     if (pin.length < 4) {
@@ -30,7 +37,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (pin.length >= 4) {
-      onLogin(storeId, pin);
+      setError(null);
+      onLogin(storeId, pin).catch((err: Error) => setError(err.message));
     }
   };
 
@@ -72,9 +80,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                 onChange={(e) => setStoreId(e.target.value)}
                 className="w-full min-h-[48px] h-12 bg-sunken/40 border border-line rounded-xl px-4 py-2.5 text-ink text-sm font-semibold appearance-none focus:outline-none focus:border-main focus:ring-2 focus:ring-main/20 transition-all cursor-pointer"
               >
-                <option value="store-01">하늘본가 숯불갈비 시흥본점 (store-01)</option>
-                <option value="store-02">배곧 바다향 칼국수 (store-02)</option>
-                <option value="store-03">강남 프리미엄 다이닝 (store-03)</option>
+                {stores.map((s) => (
+                  <option key={s.storeId} value={String(s.storeId)}>
+                    {s.name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -168,6 +178,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
           </div>
 
           <p className="text-xs text-ink-2 text-center">시연용 테스트 PIN: 1234</p>
+          {error && <p className="text-xs text-danger-strong text-center">{error}</p>}
 
           {/* Submit Action */}
           <button

@@ -14,7 +14,7 @@ export async function renderLoggedInApp(): Promise<RenderResult> {
   if (loginButton) {
     fireEvent.click(loginButton);
     // Wait for the main screen store name
-    await screen.findByText('하늘본가 숯불갈비 시흥본점');
+    await screen.findByRole('heading', { name: '42dot' });
   }
   
   return result;
@@ -45,9 +45,9 @@ export function createMockItem(overrides: Partial<WaitingItem> = {}): WaitingIte
  */
 export function createMockStore(overrides: Partial<StoreInfo> = {}): StoreInfo {
   return {
-    id: 'store-01',
-    name: '하늘본가 숯불갈비 시흥본점',
-    category: '한식 / 육류',
+    id: '1',
+    name: '42dot',
+    category: '데모 매장',
     settings: {
       minutesPerTeam: 5,
       arrivalBufferMin: 10,

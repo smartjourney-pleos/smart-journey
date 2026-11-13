@@ -7,12 +7,12 @@ describe('Tier 1 - Feature 02: High-Contrast Header Bar', () => {
   it('renders store title prominently in header', async () => {
     await renderLoggedInApp();
     expect(screen.getByRole('heading', { level: 1 })).toBeDefined();
-    expect(screen.getByText('하늘본가 숯불갈비 시흥본점')).toBeDefined();
+    expect(screen.getByText('42dot')).toBeDefined();
   });
 
   it('renders store category pill badge with high contrast', async () => {
     await renderLoggedInApp();
-    expect(screen.getByText('한식 / 육류')).toBeDefined();
+    expect(screen.getByText('데모 매장')).toBeDefined();
   });
 
   it('displays STOMP sync indicator with connected state', () => {
